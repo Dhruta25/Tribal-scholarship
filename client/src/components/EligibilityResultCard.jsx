@@ -1,95 +1,95 @@
 import React from 'react';
-import { Card, Table, Badge, Alert } from 'react-bootstrap';
-import { CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import EligibilitySummary from './EligibilitySummary';
+import CriteriaResult from './CriteriaResult';
 
 const EligibilityResultCard = ({
-  isEligible,
-  summary,
+  isEligible = false,
+  summary = '',
   criteriaResults = [],
   alternativeSchemes = [],
+  scheme = null,
   schemeName = 'Selected Scheme'
 }) => {
+  const finalSchemeName = scheme?.name || schemeName;
+  const totalRules = criteriaResults.length;
+  const passedRules = criteriaResults.filter(c => c.passed).length;
+
   return (
-    <Card className="gov-card border shadow-sm mb-4">
-      <Card.Header className={`py-3 ${isEligible ? 'bg-success text-white' : 'bg-danger text-white'}`}>
-        <div className="d-flex align-items-center gap-2">
-          {isEligible ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
-          <div>
-            <h5 className="mb-0 text-white fs-6 fw-bold">
-              {isEligible ? `Eligible for ${schemeName}` : `Not Currently Eligible for ${schemeName}`}
-            </h5>
-            <div className="small opacity-90">{summary}</div>
-          </div>
-        </div>
-      </Card.Header>
+    <div className="mb-4">
+      {/* 1. Summary Card */}
+      <EligibilitySummary
+        isEligible={isEligible}
+        schemeName={finalSchemeName}
+        summary={summary}
+        totalRules={totalRules}
+        passedRules={passedRules}
+      />
 
-      <Card.Body className="p-3">
-        <h6 className="fw-bold text-dark mb-3">Criteria-by-Criteria Evaluation:</h6>
+      {/* 2. Criteria-by-Criteria Breakdown */}
+      <div className="civic-card mb-4 p-4">
+        <h4 className="h6 fw-bold text-primary mb-3">
+          Detailed Criteria Breakdown ({passedRules}/{totalRules} Met)
+        </h4>
 
-        <div className="table-responsive">
-          <Table bordered hover className="gov-table small align-middle mb-0">
-            <thead className="table-light">
-              <tr>
-                <th style={{ width: '25%' }}>Criterion</th>
-                <th style={{ width: '35%' }}>Rule Requirement</th>
-                <th style={{ width: '25%' }}>Your Input / Extracted</th>
-                <th style={{ width: '15%' }} className="text-center">Verdict</th>
-              </tr>
-            </thead>
-            <tbody>
-              {criteriaResults.map((item, idx) => (
-                <tr key={idx} className={item.passed ? 'table-success bg-opacity-25' : 'table-danger bg-opacity-25'}>
-                  <td className="fw-bold text-capitalize">
-                    {item.field.replace(/_/g, ' ')}
-                  </td>
-                  <td>{item.message}</td>
-                  <td className="fw-semibold">
-                    {typeof item.actual === 'number' && item.actual > 1000
-                      ? `₹${item.actual.toLocaleString('en-IN')}`
-                      : String(item.actual || 'N/A')}
-                  </td>
-                  <td className="text-center">
-                    {item.passed ? (
-                      <span className="text-success fw-bold d-inline-flex align-items-center gap-1">
-                        <CheckCircle2 size={16} /> Satisfied
-                      </span>
-                    ) : (
-                      <span className="text-danger fw-bold d-inline-flex align-items-center gap-1">
-                        <XCircle size={16} /> Failed
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-
-        {/* Alternative Scheme Recommendations if Ineligible */}
-        {!isEligible && alternativeSchemes.length > 0 && (
-          <div className="mt-4 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded">
-            <div className="d-flex align-items-center gap-2 mb-2 text-primary fw-bold">
-              <Sparkles size={18} /> Recommended Alternative Schemes for Your Profile:
-            </div>
-            <div className="small text-secondary mb-2">
-              Based on your entered details, you satisfy the eligibility requirements for the following schemes:
-            </div>
-            <div className="d-flex flex-wrap gap-2">
-              {alternativeSchemes.map((alt) => (
-                <Link
-                  key={alt.id}
-                  to={`/schemes/${alt.id}`}
-                  className="btn btn-outline-primary btn-sm fw-semibold"
-                >
-                  {alt.name} ({alt.code}) →
-                </Link>
-              ))}
-            </div>
+        {criteriaResults.length === 0 ? (
+          <p className="text-secondary small mb-0">No individual rule parameters evaluated.</p>
+        ) : (
+          <div className="d-flex flex-column gap-1">
+            {criteriaResults.map((item, idx) => (
+              <CriteriaResult key={idx} criterion={item} />
+            ))}
           </div>
         )}
-      </Card.Body>
-    </Card>
+      </div>
+
+      {/* 3. Alternative Scheme Recommendations if Ineligible */}
+      {!isEligible && alternativeSchemes && alternativeSchemes.length > 0 && (
+        <div className="civic-card p-4 border-warning bg-opacity-10 mb-4" style={{ backgroundColor: 'var(--color-accent-light)', borderColor: 'var(--color-accent)' }}>
+          <div className="d-flex align-items-center gap-2 mb-2 text-primary fw-bold">
+            <Sparkles size={20} className="text-warning" />
+            <h4 className="h6 fw-bold mb-0 text-primary">Alternative Schemes You May Consider</h4>
+          </div>
+          <p className="small text-secondary mb-3">
+            Based on your entered profile parameters, here are official government schemes where your qualifications may align better:
+          </p>
+
+          <div className="row g-3">
+            {alternativeSchemes.map((alt) => (
+              <div key={alt.id || alt._id} className="col-md-6">
+                <div className="civic-card h-100 p-3 bg-white">
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <span className="civic-badge civic-badge-info">{alt.code}</span>
+                    <span className="civic-badge civic-badge-neutral small">{alt.level || 'Higher Ed'}</span>
+                  </div>
+                  <h5 className="h6 fw-bold text-primary mb-1">{alt.name}</h5>
+                  <p className="text-secondary small mb-3">
+                    {alt.reason || 'Criteria match your educational profile.'}
+                  </p>
+                  <div className="d-flex gap-2">
+                    <Link
+                      to={`/eligibility?scheme=${alt.code}`}
+                      className="btn-civic-primary btn-sm flex-grow-1 text-center"
+                      style={{ minHeight: '36px', fontSize: '0.85rem' }}
+                    >
+                      Check Eligibility
+                    </Link>
+                    <Link
+                      to={`/schemes/${alt.id || alt._id}`}
+                      className="btn-civic-secondary btn-sm flex-grow-1 text-center"
+                      style={{ minHeight: '36px', fontSize: '0.85rem' }}
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

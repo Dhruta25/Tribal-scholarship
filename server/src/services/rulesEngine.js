@@ -19,6 +19,20 @@ export const calculateAge = (dob) => {
   return age;
 };
 
+export const buildApplicantContext = (profile = {}, formData = {}) => ({
+  ...profile,
+  ...formData,
+  dob: formData.dob ?? profile.dob,
+  age: formData.age ?? calculateAge(formData.dob ?? profile.dob),
+  marksPercent: formData.marksPercent ?? profile.education?.marksPercent ?? profile.marksPercent,
+  familyIncome: formData.familyIncome ?? profile.familyIncome,
+  educationLevel: formData.educationLevel ?? profile.education?.level ?? profile.educationLevel,
+  course: formData.course ?? profile.education?.course ?? profile.course,
+  university: formData.university ?? profile.education?.university ?? profile.university,
+  country: formData.country ?? formData.studyCountry ?? profile.country,
+  category: formData.category ?? profile.category
+});
+
 /**
  * Resolve property value from nested context object
  */
@@ -82,10 +96,11 @@ export const resolveFieldValue = (context, fieldKey) => {
  */
 export const applyOperator = (operator, actual, expected) => {
   if (operator === 'exists') {
-    return actual !== undefined && actual !== null && actual !== '';
+    return actual !== undefined && actual !== null && String(actual).trim() !== '';
   }
+  if (['gt', 'gte', 'lt', 'lte', 'between'].includes(operator) && (typeof actual === 'boolean' || !['string', 'number'].includes(typeof actual) || !Number.isFinite(Number(actual)))) return false;
 
-  if (actual === undefined || actual === null) {
+  if (actual === undefined || actual === null || actual === '' || (typeof actual === 'string' && !actual.trim()) || (typeof actual === 'number' && !Number.isFinite(actual))) {
     return false;
   }
 
@@ -197,21 +212,7 @@ export const testRulesAgainstApplications = (rules, applications) => {
 
   for (const app of applications) {
     const applicant = app.applicantId || {};
-    const mergedContext = {
-      name: applicant.name,
-      dob: applicant.profile?.dob,
-      age: applicant.profile?.dob ? calculateAge(applicant.profile.dob) : undefined,
-      gender: applicant.profile?.gender,
-      category: applicant.profile?.category || 'ST',
-      familyIncome: app.formData?.familyIncome || applicant.profile?.familyIncome,
-      marksPercent: app.formData?.marksPercent || applicant.profile?.education?.marksPercent,
-      educationLevel: app.formData?.educationLevel || applicant.profile?.education?.level,
-      course: app.formData?.course || applicant.profile?.education?.course,
-      university: app.formData?.university || applicant.profile?.education?.university,
-      country: app.formData?.studyCountry || app.formData?.country,
-      disability: applicant.profile?.disability,
-      ...app.formData
-    };
+    const mergedContext = buildApplicantContext(applicant.profile || {}, app.formData || {});
 
     const evalResult = evaluate(tempScheme, mergedContext);
     if (evalResult.passed) {

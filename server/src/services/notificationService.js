@@ -63,14 +63,7 @@ export const sendNotification = async ({
       read: false
     });
 
-    // Mock console logging for Email & SMS delivery
-    console.log('\n================== [MOCK DISPATCH: MoTA NOTIFICATION] ==================');
-    console.log(`[TO USER]: ${user?.name || userId} (${user?.email || 'N/A'}) | Phone: ${user?.phone || 'N/A'}`);
-    console.log(`[CHANNEL]: ${channel.toUpperCase()} | [TYPE]: ${type} | [LANGUAGE]: ${lang.toUpperCase()}`);
-    console.log(`[SUBJECT]: ${finalSubject}`);
-    console.log(`[BODY]: ${finalBody}`);
-    if (link) console.log(`[ACTION LINK]: ${link}`);
-    console.log('========================================================================\n');
+    if (process.env.NODE_ENV === 'development') console.log(`[Notification saved]: ${type}`);
 
     return notification;
   } catch (error) {

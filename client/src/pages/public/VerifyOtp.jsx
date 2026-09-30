@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient from '../../api/axiosClient';
 import { KeyRound, Mail, RefreshCw, CheckCircle2 } from 'lucide-react';
@@ -11,13 +11,15 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
 
   const emailParam = searchParams.get('email') || '';
-  const otpDebug = searchParams.get('otpDebug') || '';
+  const location = useLocation();
+  const otpDebug = location.state?.otpDebug || '';
+  const [developmentCode, setDevelopmentCode] = useState(otpDebug);
 
   const [email, setEmail] = useState(emailParam);
   const [otp, setOtp] = useState(otpDebug);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [resendMsg, setResendMsg] = useState(null);
+  const [resendMsg, setResendMsg] = useState(location.state?.message || null);
   const [error, setError] = useState(null);
 
   const handleVerify = async (e) => {
@@ -51,7 +53,8 @@ const VerifyOtp = () => {
     try {
       const res = await axiosClient.post('/auth/resend-otp', { email });
       if (res.data.success) {
-        setResendMsg('A fresh verification code has been dispatched to your email address.');
+        setResendMsg(res.data.message);
+        setDevelopmentCode(res.data.otpDebug || '');
         if (res.data.otpDebug) {
           setOtp(res.data.otpDebug);
         }
@@ -75,11 +78,13 @@ const VerifyOtp = () => {
               <KeyRound size={32} />
             </div>
 
-            <h4 className="fw-bold text-dark mb-1">Verify Email & Mobile OTP</h4>
+            <h4 className="fw-bold text-dark mb-1">Verify Your Email</h4>
             <p className="text-muted small mb-4">
               Enter the 6-digit verification code sent to <br />
               <strong className="text-primary">{email || 'your registered email'}</strong>
             </p>
+
+            {developmentCode && <Alert variant="info">Local development code: <strong>{developmentCode}</strong>. Email delivery is disabled in this mode.</Alert>}
 
             {resendMsg && (
               <Alert variant="success" className="py-2 small text-start d-flex align-items-center gap-2 mb-3">

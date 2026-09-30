@@ -26,9 +26,11 @@ export const protect = async (req, res, next) => {
       });
     }
 
+    if (!user.isVerified) return res.status(403).json({ success: false, code: 'EMAIL_NOT_VERIFIED', email: user.email, message: 'Verify your email before continuing.' });
     req.user = user;
     next();
   } catch (error) {
+    if (!['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError'].includes(error.name)) return next(error);
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired authentication token.'

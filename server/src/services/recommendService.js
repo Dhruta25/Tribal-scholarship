@@ -1,5 +1,5 @@
 import Scheme from '../models/Scheme.js';
-import { evaluate, calculateAge } from './rulesEngine.js';
+import { evaluate, buildApplicantContext } from './rulesEngine.js';
 
 /**
  * Recommend schemes for an applicant based on profile attributes and explain every criterion.
@@ -9,18 +9,7 @@ export const recommendSchemesForUser = async (userProfile, uploadedDocKeys = [])
   const schemes = await Scheme.find({ isActive: true });
   const recommendations = [];
 
-  const age = userProfile.dob ? calculateAge(userProfile.dob) : (userProfile.age ? Number(userProfile.age) : null);
-
-  const context = {
-    ...userProfile,
-    age,
-    marksPercent: userProfile.marksPercent || userProfile.education?.marksPercent,
-    educationLevel: userProfile.educationLevel || userProfile.education?.level,
-    course: userProfile.course || userProfile.education?.course,
-    university: userProfile.university || userProfile.education?.university,
-    familyIncome: userProfile.familyIncome,
-    category: userProfile.category || 'ST'
-  };
+  const context = buildApplicantContext(userProfile);
 
   for (const scheme of schemes) {
     const evalResult = evaluate(scheme, context);
@@ -40,7 +29,7 @@ export const recommendSchemesForUser = async (userProfile, uploadedDocKeys = [])
     // Check required documents availability
     if (scheme.requiredDocuments && scheme.requiredDocuments.length > 0) {
       for (const reqDoc of scheme.requiredDocuments) {
-        if (!uploadedDocKeys.includes(reqDoc.key)) {
+        if (reqDoc.required && !uploadedDocKeys.includes(reqDoc.key)) {
           warnings.push(`⚠ You will need to submit: ${reqDoc.label}`);
         }
       }

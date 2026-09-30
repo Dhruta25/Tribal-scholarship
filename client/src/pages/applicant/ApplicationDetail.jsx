@@ -19,9 +19,6 @@ const ApplicationDetail = () => {
   const { user } = useAuth();
   const role = user?.role;
 
-  if (role === 'verifier') {
-    return <Navigate to={`/verifier/review/${id}`} replace />;
-  }
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +62,10 @@ const ApplicationDetail = () => {
       setShowDeleteModal(false);
     }
   };
+
+  if (role === 'verifier') {
+    return <Navigate to={`/verifier/review/${id}`} replace />;
+  }
 
   if (loading) {
     return (
@@ -110,14 +111,14 @@ const ApplicationDetail = () => {
                 <ArrowLeft size={14} /> Back to My Applications
               </Link>
             )}
-            <Button
+{(role === 'admin' || application?.status === 'DRAFT') && (            <Button
               variant="outline-danger"
               size="sm"
               className="d-inline-flex align-items-center gap-1"
               onClick={() => setShowDeleteModal(true)}
             >
               <Trash2 size={14} /> Delete Application
-            </Button>
+            </Button>)}
           </div>
 
           {/* Submission Success Toast Banner */}

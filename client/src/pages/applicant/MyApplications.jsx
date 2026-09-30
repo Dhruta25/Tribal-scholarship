@@ -86,7 +86,7 @@ const MyApplications = () => {
           <Link to={`/applicant/applications/${row._id}`} className="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
             <Eye size={14} /> View
           </Link>
-          <Button
+{(row.status === 'DRAFT') && (          <Button
             variant="outline-danger"
             size="sm"
             className="d-inline-flex align-items-center gap-1"
@@ -94,7 +94,7 @@ const MyApplications = () => {
             title="Permanently Delete Application"
           >
             <Trash2 size={13} /> Delete
-          </Button>
+          </Button>)}
         </div>
       )
     }

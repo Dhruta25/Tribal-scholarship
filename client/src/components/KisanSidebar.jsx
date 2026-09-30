@@ -28,14 +28,17 @@ const KisanSidebar = ({ activeTab, setActiveTab }) => {
 
   return (
     <aside className="ks-sidebar">
-      {/* MoTA Tribal Affairs Brand Header */}
-      <NavLink to="/" className="ks-brand-header">
-        <div className="ks-brand-logo-icon">
-          <Award size={18} />
-        </div>
+      {/* Vidya Setu Brand Header */}
+      <NavLink to="/" className="ks-brand-header text-decoration-none">
+        <img
+          src="/images/vidyasetu-logo.jpg"
+          alt="VIDYA SETU"
+          className="rounded-1 flex-shrink-0"
+          style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+        />
         <div>
           <span className="ks-brand-title d-block" style={{ fontSize: '1.05rem', lineHeight: '1.1' }}>
-            MoTA VanSetu
+            VIDYA<span style={{ color: 'var(--color-accent)' }}>SETU</span>
           </span>
           <span className="text-muted" style={{ fontSize: '0.68rem', letterSpacing: '0.04em' }}>
             TRIBAL SCHOLARSHIPS

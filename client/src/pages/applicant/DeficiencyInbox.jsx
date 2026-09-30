@@ -56,7 +56,7 @@ const DeficiencyInbox = () => {
   };
 
   const handleReuploadComplete = () => {
-    setSuccessMsg('Replacement certificate uploaded! AI OCR has re-verified your document and updated the deficiency status.');
+    setSuccessMsg('Replacement document uploaded. Review the updated OCR results; a verifier may still need to approve it.');
     setTimeout(() => {
       setShowModal(false);
       fetchDeficiencies();

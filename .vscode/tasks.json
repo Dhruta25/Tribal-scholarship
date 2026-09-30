@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Tribal Scholar: Backend + MongoDB",
+      "type": "shell",
+      "command": "npm run dev:local",
+      "options": { "cwd": "${workspaceFolder}/server" },
+      "isBackground": true,
+      "problemMatcher": { "owner": "tribal-backend", "pattern": { "regexp": "^(.+):(\\d+):(\\d+): (.+)$", "file": 1, "line": 2, "column": 3, "message": 4 }, "background": { "activeOnStart": true, "beginsPattern": ".*dev:local.*", "endsPattern": ".*Scholarship API ready.*" } },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "tribal-scholar", "clear": false }
+    },
+    {
+      "label": "Tribal Scholar: Frontend",
+      "type": "shell",
+      "command": "npm run dev -- --host 127.0.0.1",
+      "options": { "cwd": "${workspaceFolder}/client" },
+      "isBackground": true,
+      "problemMatcher": { "owner": "tribal-frontend", "pattern": { "regexp": "^(.+):(\\d+):(\\d+): (.+)$", "file": 1, "line": 2, "column": 3, "message": 4 }, "background": { "activeOnStart": true, "beginsPattern": ".*vite.*", "endsPattern": ".*Local:.*" } },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "tribal-scholar", "clear": false }
+    },
+    {
+      "label": "Tribal Scholar: Start app",
+      "dependsOn": ["Tribal Scholar: Backend + MongoDB", "Tribal Scholar: Frontend"],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Tribal Scholar: Test backend",
+      "type": "shell",
+      "command": "npm test",
+      "options": { "cwd": "${workspaceFolder}/server" },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

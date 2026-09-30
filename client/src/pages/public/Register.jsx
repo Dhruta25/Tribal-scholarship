@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
+import { Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { INDIAN_STATES, UNION_TERRITORIES } from '../../constants/indianStates';
 import AppShell from '../../components/AppShell';
-import { UserPlus } from 'lucide-react';
+import PageHeader from '../../components/common/PageHeader';
+import Button from '../../components/common/Button';
+import { UserPlus, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 const Register = () => {
   const { register } = useAuth();
@@ -60,26 +62,33 @@ const Register = () => {
           category: 'ST',
           state: formData.state,
           district: formData.district,
-          aadhaarLast4: formData.aadhaarLast4,
-          familyIncome: formData.familyIncome ? Number(formData.familyIncome) : 0,
-          bankAccount: formData.bankAccount,
-          ifsc: formData.ifsc,
           education: {
             level: formData.educationLevel,
             course: formData.course,
             university: formData.university,
-            marksPercent: formData.marksPercent ? Number(formData.marksPercent) : 0,
-            yearOfPassing: new Date().getFullYear()
-          }
+            marksPercent: formData.marksPercent ? parseFloat(formData.marksPercent) : undefined
+          },
+          familyIncome: formData.familyIncome ? parseFloat(formData.familyIncome) : undefined,
+          bankDetails: {
+            accountNumber: formData.bankAccount,
+            ifsc: formData.ifsc
+          },
+          aadhaarLast4: formData.aadhaarLast4
         }
       };
 
       const res = await register(payload);
-      if (res.success) {
-        navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}&otpDebug=${res.otpDebug || ''}`);
+      if (res && res.requiresVerification) {
+        navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`, {
+          state: { message: res.message || 'OTP verification code sent to your registered email.' }
+        });
+      } else {
+        navigate('/login', {
+          state: { message: 'Registration completed successfully! Please sign in with your credentials.' }
+        });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please check inputs.');
+      setError(err.response?.data?.message || 'Registration failed. Please check your entered details.');
     } finally {
       setLoading(false);
     }
@@ -87,330 +96,375 @@ const Register = () => {
 
   return (
     <AppShell>
-      <Container className="py-4">
-        <Row className="justify-content-center">
-          <Col lg={8} md={10}>
-            <div className="ks-card p-4">
-              <div className="text-center mb-4">
-                <div
-                  className="rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-2"
-                  style={{ background: '#1c1c22', border: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}
-                >
-                  <UserPlus size={28} />
-                </div>
-                <h3 className="fw-bold text-white mb-1" style={{ fontSize: '1.5rem' }}>ST Scholar Registration</h3>
-                <p className="text-secondary small">
-                  Create your Scheduled Tribe Scholar account for NFST and NOS online applications
+      <PageHeader
+        category="Scheduled Tribe Scholar Registration"
+        title="Create Your Student Account"
+        subtitle="Register for National Fellowships (NFST), Overseas Scholarships (NOS), and Direct Benefit Transfer (DBT)."
+        breadcrumbs={[{ label: 'Register' }]}
+      />
+
+      <Row className="justify-content-center">
+        <Col lg={9}>
+          <div className="civic-card p-4 p-md-5">
+            <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+              <div
+                className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  backgroundColor: 'var(--color-primary-light)',
+                  color: 'var(--color-primary)'
+                }}
+              >
+                <UserPlus size={22} />
+              </div>
+              <div>
+                <h2 className="h5 fw-bold text-primary mb-1">Scholar Information Registration Form</h2>
+                <p className="text-secondary small mb-0">
+                  Ensure names and details match your government identity and ST caste certificate exactly.
                 </p>
               </div>
+            </div>
 
-              {error && <Alert variant="danger" className="py-2 small bg-dark text-danger border-danger">{error}</Alert>}
+            {error && (
+              <div className="p-3 mb-4 rounded-2 bg-danger bg-opacity-10 border border-danger text-danger small">
+                {error}
+              </div>
+            )}
 
-              <Form onSubmit={handleSubmit}>
-                <Row className="gy-3">
-                  {/* Account Details */}
-                  <Col md={12}>
-                    <h6 className="fw-bold text-warning border-bottom border-secondary border-opacity-50 pb-2 mb-2">
-                      1. Personal &amp; Contact Information
-                    </h6>
-                  </Col>
+            <form onSubmit={handleSubmit}>
+              {/* Section 1: Personal & Contact Details */}
+              <h3 className="h6 fw-bold text-primary border-bottom pb-2 mb-3">
+                1. Personal &amp; Identity Details
+              </h3>
+              <Row className="gy-3 mb-4">
+                <Col md={6}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">First Name <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      className="civic-input"
+                      placeholder="e.g. Rahul"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">First Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="firstName"
-                        className="ks-input"
-                        placeholder="e.g. Rahul"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={6}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Last Name <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      className="civic-input"
+                      placeholder="e.g. Kumar"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Last Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="lastName"
-                        className="ks-input"
-                        placeholder="e.g. Kumar"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={6}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Email Address <span className="required-mark">*</span></label>
+                    <input
+                      type="email"
+                      name="email"
+                      className="civic-input"
+                      placeholder="e.g. rahul.st@example.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                    />
+                    <div className="civic-helper">Official verification OTP will be delivered to this address.</div>
+                  </div>
+                </Col>
 
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Email Address</Form.Label>
-                      <Form.Control
-                        type="email"
-                        name="email"
-                        className="ks-input"
-                        placeholder="e.g. scholar@example.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={6}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Mobile Phone Number <span className="required-mark">*</span></label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      className="civic-input"
+                      placeholder="10-digit mobile number"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Mobile Phone Number</Form.Label>
-                      <Form.Control
-                        type="tel"
-                        name="phone"
-                        className="ks-input"
-                        placeholder="e.g. 9876543210"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Gender <span className="required-mark">*</span></label>
+                    <select
+                      name="gender"
+                      className="civic-select"
+                      value={formData.gender}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female (30% Horizontal Quota)</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Date of Birth</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="dob"
-                        className="ks-input"
-                        value={formData.dob}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Date of Birth <span className="required-mark">*</span></label>
+                    <input
+                      type="date"
+                      name="dob"
+                      className="civic-input"
+                      value={formData.dob}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Gender</Form.Label>
-                      <Form.Select name="gender" className="ks-select" value={formData.gender} onChange={handleChange} required>
-                        <option value="">-- Select Gender --</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Aadhaar (Last 4 Digits) <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="aadhaarLast4"
+                      maxLength={4}
+                      pattern="[0-9]{4}"
+                      className="civic-input"
+                      placeholder="XXXX"
+                      value={formData.aadhaarLast4}
+                      onChange={handleChange}
+                      required
+                    />
+                    <div className="civic-helper">Only last 4 digits stored for privacy.</div>
+                  </div>
+                </Col>
+              </Row>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Domicile State</Form.Label>
-                      <Form.Select
-                        name="state"
-                        className="ks-select"
-                        value={formData.state}
-                        onChange={handleChange}
-                        required
-                      >
-                        <option value="">-- Domicile State / UT --</option>
-                        <optgroup label="28 Indian States (A–Z)">
-                          {INDIAN_STATES.map((st) => (
-                            <option key={st} value={st}>
-                              {st}
-                            </option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="8 Union Territories">
-                          {UNION_TERRITORIES.map((ut) => (
-                            <option key={ut} value={ut}>
-                              {ut}
-                            </option>
-                          ))}
-                        </optgroup>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
+              {/* Section 2: Domicile Details */}
+              <h3 className="h6 fw-bold text-primary border-bottom pb-2 mb-3">
+                2. Domicile &amp; Residential Location
+              </h3>
+              <Row className="gy-3 mb-4">
+                <Col md={6}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">State / UT of Domicile <span className="required-mark">*</span></label>
+                    <select
+                      name="state"
+                      className="civic-select"
+                      value={formData.state}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select State or UT</option>
+                      <optgroup label="States">
+                        {INDIAN_STATES.map((st) => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Union Territories">
+                        {UNION_TERRITORIES.map((ut) => (
+                          <option key={ut} value={ut}>{ut}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+                </Col>
 
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">District</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="district"
-                        className="ks-input"
-                        placeholder="e.g. Ranchi / Mayurbhanj"
-                        value={formData.district}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={6}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">District Name <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="district"
+                      className="civic-input"
+                      placeholder="e.g. Ranchi / Bastar"
+                      value={formData.district}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
+              </Row>
 
-                  {/* Academic & Financial */}
-                  <Col md={12} className="mt-4">
-                    <h6 className="fw-bold text-warning border-bottom border-secondary border-opacity-50 pb-2 mb-2">
-                      2. Academic &amp; Verification Baseline
-                    </h6>
-                  </Col>
+              {/* Section 3: Educational Background */}
+              <h3 className="h6 fw-bold text-primary border-bottom pb-2 mb-3">
+                3. Current / Highest Educational Background
+              </h3>
+              <Row className="gy-3 mb-4">
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Education Level <span className="required-mark">*</span></label>
+                    <select
+                      name="educationLevel"
+                      className="civic-select"
+                      value={formData.educationLevel}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Education Level</option>
+                      <option value="10th">Class 10th (Secondary)</option>
+                      <option value="12th">Class 12th / Intermediate</option>
+                      <option value="bachelors">Bachelor's Degree</option>
+                      <option value="masters">Master's Degree</option>
+                      <option value="phd">Ph.D. / M.Phil</option>
+                    </select>
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Qualifying Degree Level</Form.Label>
-                      <Form.Select name="educationLevel" className="ks-select" value={formData.educationLevel} onChange={handleChange} required>
-                        <option value="">-- Qualifying Level --</option>
-                        <option value="12th">12th Standard / Higher Secondary</option>
-                        <option value="bachelors">Bachelor's (Graduation)</option>
-                        <option value="masters">Master's (Post-Graduation)</option>
-                        <option value="phd">Ph.D. Enrolled</option>
-                        <option value="postdoc">Post-Doctoral</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Course / Degree Specialization <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="course"
+                      className="civic-input"
+                      placeholder="e.g. M.Sc. Computer Science"
+                      value={formData.course}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Degree / Course Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="course"
-                        className="ks-input"
-                        placeholder="e.g. M.Sc. Biotechnology"
-                        value={formData.course}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Marks Percentage (%) <span className="required-mark">*</span></label>
+                    <input
+                      type="number"
+                      name="marksPercent"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      className="civic-input"
+                      placeholder="e.g. 72.50"
+                      value={formData.marksPercent}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Aggregate Percentage (%)</Form.Label>
-                      <Form.Control
-                        type="number"
-                        step="0.1"
-                        name="marksPercent"
-                        className="ks-input"
-                        placeholder="e.g. 74.5"
-                        value={formData.marksPercent}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={12}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Institution / University Name <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="university"
+                      className="civic-input"
+                      placeholder="e.g. Banaras Hindu University / IIT Kharagpur"
+                      value={formData.university}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
+              </Row>
 
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">University / College</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="university"
-                        className="ks-input"
-                        placeholder="e.g. Central University of Jharkhand"
-                        value={formData.university}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Annual Family Income (INR)</Form.Label>
-                      <Form.Control
+              {/* Section 4: Income & DBT Bank Details */}
+              <h3 className="h6 fw-bold text-primary border-bottom pb-2 mb-3">
+                4. Family Income &amp; DBT Bank Account
+              </h3>
+              <Row className="gy-3 mb-4">
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Annual Family Income (₹) <span className="required-mark">*</span></label>
+                    <div className="civic-input-group">
+                      <span className="civic-input-prefix">₹</span>
+                      <input
                         type="number"
                         name="familyIncome"
-                        className="ks-input"
+                        className="civic-input civic-input-with-prefix"
                         placeholder="e.g. 250000"
                         value={formData.familyIncome}
                         onChange={handleChange}
                         required
                       />
-                    </Form.Group>
-                  </Col>
+                    </div>
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Aadhaar (Last 4 Digits)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        maxLength={4}
-                        name="aadhaarLast4"
-                        className="ks-input"
-                        placeholder="e.g. 4892"
-                        value={formData.aadhaarLast4}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Bank Account Number <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="bankAccount"
+                      className="civic-input"
+                      placeholder="Aadhaar-seeded account"
+                      value={formData.bankAccount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Bank Account Number</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="bankAccount"
-                        className="ks-input"
-                        placeholder="e.g. 39847192841"
-                        value={formData.bankAccount}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={4}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Bank IFSC Code <span className="required-mark">*</span></label>
+                    <input
+                      type="text"
+                      name="ifsc"
+                      className="civic-input"
+                      placeholder="e.g. SBIN0001234"
+                      value={formData.ifsc}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
 
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="small fw-bold text-light">Bank IFSC Code</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="ifsc"
-                        className="ks-input"
-                        placeholder="e.g. SBIN0001234"
-                        value={formData.ifsc}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={12}>
+                  <div className="civic-form-group">
+                    <label className="civic-label">Account Password <span className="required-mark">*</span></label>
+                    <input
+                      type="password"
+                      name="password"
+                      minLength={8}
+                      className="civic-input"
+                      placeholder="Minimum 8 characters with numbers and symbols"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </Col>
+              </Row>
 
-                  <Col md={12}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="small fw-bold text-light">Password</Form.Label>
-                      <Form.Control
-                        type="password"
-                        name="password"
-                        className="ks-input"
-                        placeholder="Enter a secure password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <div className="mt-4">
-                  <Button
-                    type="submit"
-                    className="w-100 fw-bold py-2 shadow-sm border-0"
-                    style={{ backgroundColor: '#fbbf24', color: '#000000' }}
-                    disabled={loading}
-                  >
-                    {loading ? <Spinner size="sm" animation="border" /> : 'Register & Receive OTP'}
-                  </Button>
+              <div className="mt-4 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div className="text-secondary small">
+                  By clicking Register, you confirm that you belong to a Scheduled Tribe (ST) community.
                 </div>
-              </Form>
-
-              <div className="text-center mt-3 small text-secondary">
-                Already registered? <Link to="/login" className="fw-bold text-warning">Sign In Here</Link>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={loading}
+                >
+                  Register &amp; Receive OTP &rarr;
+                </Button>
               </div>
+            </form>
+
+            <div className="text-center mt-4 pt-3 border-top small text-secondary">
+              Already registered on the MoTA portal?{' '}
+              <Link to="/login" className="fw-bold text-primary text-decoration-underline">
+                Sign In to Your Account
+              </Link>
             </div>
-          </Col>
-        </Row>
-      </Container>
+          </div>
+        </Col>
+      </Row>
     </AppShell>
   );
 };
 
 export default Register;
-

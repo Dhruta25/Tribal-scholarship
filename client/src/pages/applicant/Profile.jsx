@@ -176,7 +176,11 @@ const Profile = () => {
                     <Form.Label className="small fw-bold">Education Level</Form.Label>
                     <Form.Select name="educationLevel" value={formData.educationLevel} onChange={handleChange}>
                       <option value="">-- Select Degree Level --</option>
-                      <option value="12th">12th Standard / Higher Secondary</option>
+                      <option value="9th">Class 9</option>
+                        <option value="10th">Class 10</option>
+                        <option value="11th">Class 11</option>
+                        <option value="diploma">Diploma</option>
+                        <option value="12th">12th Standard / Higher Secondary</option>
                       <option value="bachelors">Bachelor's Degree</option>
                       <option value="masters">Master's Degree</option>
                       <option value="phd">Ph.D. / Doctoral</option>

@@ -36,6 +36,7 @@ const documentSchema = new mongoose.Schema({
   },
   fileData: {
     type: String,
+    select: false,
     default: ''
   },
   ocrStatus: {
@@ -83,7 +84,8 @@ const documentSchema = new mongoose.Schema({
     default: Date.now
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { transform(doc, ret) { delete ret.fileData; delete ret.storedPath; return ret; } }
 });
 
 const Document = mongoose.model('Document', documentSchema);

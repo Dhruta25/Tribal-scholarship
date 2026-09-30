@@ -21,6 +21,8 @@ const DocumentUploader = ({
   const [error, setError] = useState(null);
   const [uploadedDoc, setUploadedDoc] = useState(currentDoc);
   const fileInputRef = useRef(null);
+  const pollingRef = useRef(null);
+  React.useEffect(() => () => clearInterval(pollingRef.current), []);
 
   // Sync uploadedDoc with currentDoc if changed from parent
   React.useEffect(() => {
@@ -31,6 +33,7 @@ const DocumentUploader = ({
     if (e.target.files && e.target.files[0]) {
       const selected = e.target.files[0];
       if (selected.size > 5 * 1024 * 1024) {
+        setFile(null);
         setError('File exceeds 5MB limit. Please choose a smaller file.');
         return;
       }
@@ -104,6 +107,7 @@ const DocumentUploader = ({
     let attempts = 0;
     const maxAttempts = 20;
 
+    clearInterval(pollingRef.current);
     const interval = setInterval(async () => {
       attempts++;
       try {
@@ -114,6 +118,8 @@ const DocumentUploader = ({
             clearInterval(interval);
             setScanning(false);
             setUploadedDoc(doc);
+            if (doc.ocrStatus === 'failed') setError('OCR could not read this file. Upload a clearer document or request manual review.');
+            else if (doc.ocrStatus === 'pending') setError('OCR is still processing. Refresh the application to check its status.');
             if (onUploadSuccess) onUploadSuccess(doc);
           }
         }
@@ -123,7 +129,8 @@ const DocumentUploader = ({
           setScanning(false);
         }
       }
-    }, 1500); // Check every 1.5 seconds
+    }, 1500);
+    pollingRef.current = interval; // Check every 1.5 seconds
   };
 
   return (
@@ -141,7 +148,7 @@ const DocumentUploader = ({
         <div className="d-flex align-items-center gap-2">
           {uploadedDoc && !scanning && (
             <span className="badge bg-success bg-opacity-10 text-success d-inline-flex align-items-center gap-1">
-              <CheckCircle size={13} /> {uploadedDoc.ocrStatus === 'done' ? 'OCR Verified' : 'Uploaded'}
+              <CheckCircle size={13} /> {uploadedDoc.ocrStatus === 'done' ? 'OCR Processed' : 'Uploaded'}
             </span>
           )}
           {uploadedDoc && !scanning && !isReupload && (

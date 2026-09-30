@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axiosClient from '../api/axiosClient';
 import { Card, ProgressBar, Alert, Badge, Table, Button, Modal, Tabs, Tab } from 'react-bootstrap';
 import { FileText, CheckCircle, AlertTriangle, XCircle, Eye, Cpu, Download, ExternalLink, ShieldCheck } from 'lucide-react';
 
@@ -6,6 +7,19 @@ const OcrResultCard = ({ document: doc }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState('preview');
   const [imgError, setImgError] = useState(false);
+  const [fileUrl, setFileUrl] = useState('');
+  const [fileError, setFileError] = useState('');
+  useEffect(() => {
+    if (!showPreview || !doc?._id) return;
+    let active = true;
+    let url;
+    setFileUrl('');
+    setFileError('');
+    axiosClient.get(`/documents/${doc._id}/file`, { responseType: 'blob' })
+      .then(res => { if (active) { url = URL.createObjectURL(res.data); setFileUrl(url); } })
+      .catch(() => { if (active) setFileError('Unable to load the original file. It may need to be uploaded again.'); });
+    return () => { active = false; if (url) URL.revokeObjectURL(url); };
+  }, [showPreview, doc?._id, doc?.uploadedAt]);
 
   useEffect(() => {
     if (showPreview) {
@@ -16,8 +30,6 @@ const OcrResultCard = ({ document: doc }) => {
 
   if (!doc) return null;
 
-  const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/+$/, '');
-  const fileUrl = `${apiBase}/documents/${doc._id}/file`;
   const isPdf = (doc.mimeType && doc.mimeType.includes('pdf')) || (doc.originalName && doc.originalName.toLowerCase().endsWith('.pdf'));
 
   const getStatusBadge = () => {
@@ -158,12 +170,14 @@ const OcrResultCard = ({ document: doc }) => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-0">
+          {fileError && <Alert variant="danger">{fileError}</Alert>}
+          {!fileUrl && !fileError && <p>Loading document…</p>}
           <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="border-bottom px-3 pt-2 bg-light">
             <Tab eventKey="preview" title="📄 Original Document File">
               <div className="p-3 bg-dark bg-opacity-10 text-center" style={{ minHeight: '400px' }}>
                 {isPdf ? (
                   <iframe
-                    src={fileUrl}
+                    src={fileUrl || undefined}
                     title={doc.originalName}
                     width="100%"
                     height="520px"
@@ -172,7 +186,7 @@ const OcrResultCard = ({ document: doc }) => {
                 ) : !imgError ? (
                   <div className="d-flex justify-content-center align-items-center p-2">
                     <img
-                      src={fileUrl}
+                      src={fileUrl || undefined}
                       alt={doc.originalName}
                       className="img-fluid rounded shadow-sm border bg-white"
                       style={{ maxHeight: '520px', objectFit: 'contain' }}
@@ -223,7 +237,7 @@ const OcrResultCard = ({ document: doc }) => {
           </div>
           <div className="d-flex gap-2">
             <a
-              href={fileUrl}
+              href={fileUrl || undefined}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
@@ -231,7 +245,7 @@ const OcrResultCard = ({ document: doc }) => {
               <ExternalLink size={13} /> Open in New Tab
             </a>
             <a
-              href={fileUrl}
+              href={fileUrl || undefined}
               download={doc.originalName}
               className="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
               style={{ backgroundColor: '#0B2545', borderColor: '#0B2545' }}

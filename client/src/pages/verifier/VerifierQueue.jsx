@@ -146,15 +146,7 @@ const VerifierQueue = () => {
           <Link to={`/verifier/review/${row._id}`} className="btn btn-gov-primary btn-sm fw-semibold d-inline-flex align-items-center gap-1">
             <Eye size={14} /> Scrutinize
           </Link>
-          <Button
-            variant="outline-danger"
-            size="sm"
-            className="d-inline-flex align-items-center gap-1"
-            onClick={() => setDeletingApp(row)}
-            title="Permanently Delete / Purge Application"
-          >
-            <Trash2 size={13} />
-          </Button>
+
         </div>
       )
     }

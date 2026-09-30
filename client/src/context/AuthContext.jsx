@@ -19,7 +19,10 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error('[Auth Error]: Failed to fetch user profile.');
-          logout();
+          if (error.response?.status === 401 || error.response?.status === 403) logout();
+          else {
+            try { setUser(JSON.parse(localStorage.getItem('mota_user') || 'null')); } catch { setUser(null); }
+          }
         }
       } else {
         setUser(null);
@@ -56,8 +59,10 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    const handleUnauthorized = () => logout();
+    window.addEventListener('mota:unauthorized', handleUnauthorized);
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => { window.removeEventListener('storage', handleStorageChange); window.removeEventListener('mota:unauthorized', handleUnauthorized); };
   }, []);
 
   const login = async (email, password) => {

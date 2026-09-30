@@ -58,6 +58,10 @@ const NewApplication = () => {
       setError(null);
       setSuccessMsg(null);
       setExistingActiveApp(null);
+      setApplication(null);
+      setUploadedDocs([]);
+      setRulesEvalResult(null);
+      setStep(1);
 
       try {
         // Fetch Scheme Details
@@ -173,6 +177,7 @@ const NewApplication = () => {
       return;
     }
 
+    if (targetStep === 2 && step === 1) { await handleProceedToDocs(); return; }
     if (targetStep === 2) {
       if (!application) {
         // Auto-save draft and move to step 2
@@ -240,6 +245,7 @@ const NewApplication = () => {
     setError(null);
 
     try {
+      await axiosClient.put(`/applications/${application._id}`, { formData });
       const res = await axiosClient.get(`/applications/${application._id}`);
       if (res.data.success) {
         const docs = res.data.documents || [];
@@ -263,10 +269,11 @@ const NewApplication = () => {
           schemeId: selectedSchemeId,
           ...formData,
           category: user?.profile?.category || 'ST',
-          marksPercent: formData.marksPercent || user?.profile?.education?.marksPercent,
-          familyIncome: formData.familyIncome || user?.profile?.familyIncome,
-          educationLevel: user?.profile?.education?.level || 'masters',
-          age: formData.age || (user?.profile?.dob ? Math.floor((Date.now() - new Date(user.profile.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : undefined)
+          marksPercent: formData.marksPercent ?? user?.profile?.education?.marksPercent,
+          familyIncome: formData.familyIncome ?? user?.profile?.familyIncome,
+          educationLevel: user?.profile?.education?.level,
+          dob: user?.profile?.dob,
+          age: formData.age
         });
 
         if (evalRes.data.success) {
@@ -276,7 +283,7 @@ const NewApplication = () => {
         setStep(3);
       }
     } catch (err) {
-      setError('Failed to prepare application review.');
+      setError(err.response?.data?.message || 'Failed to prepare application review.');
     }
   };
 

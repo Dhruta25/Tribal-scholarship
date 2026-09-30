@@ -97,7 +97,8 @@ export const checkAndSendReminders = async () => {
 export const initReminderService = (intervalMs = 60 * 60 * 1000) => {
   console.log('[Reminder Service]: Initialized background interval runner (every 1 hour).');
   // Run once on startup
-  setTimeout(checkAndSendReminders, 5000);
+  const first = setTimeout(checkAndSendReminders, 5000);
   // Schedule ongoing
-  setInterval(checkAndSendReminders, intervalMs);
+  const interval = setInterval(checkAndSendReminders, intervalMs);
+  return () => { clearTimeout(first); clearInterval(interval); };
 };

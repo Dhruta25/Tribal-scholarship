@@ -1,3 +1,4 @@
+import Counter from './Counter.js';
 import mongoose from 'mongoose';
 
 const stageHistorySchema = new mongoose.Schema({
@@ -123,7 +124,11 @@ applicationSchema.statics.generateApplicationNo = async function(schemeCode) {
     .select('applicationNo')
     .lean();
   const lastSeq = last ? (parseInt(last.applicationNo.split('/').pop(), 10) || 0) : 0;
-  return `${prefix}${String(lastSeq + 1).padStart(6, '0')}`;
+  try {
+    await Counter.updateOne({ _id: prefix }, { $setOnInsert: { sequence: lastSeq } }, { upsert: true });
+  } catch (error) { if (error.code !== 11000) throw error; }
+  const counter = await Counter.findByIdAndUpdate(prefix, { $inc: { sequence: 1 } }, { new: true });
+  return `${prefix}${String(counter.sequence).padStart(6, '0')}`;
 };
 
 const Application = mongoose.model('Application', applicationSchema);

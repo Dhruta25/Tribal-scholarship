@@ -90,6 +90,7 @@ const MachineLearningHub = () => {
 
         {/* Right Main ML Intelligence Workspace */}
         <Col lg={9} md={8}>
+          {prediction?.warning && <div role="alert" className="alert alert-warning">{prediction.warning}</div>}
           {/* Header Banner */}
           <div className="bg-primary bg-gradient text-white rounded-3 p-4 mb-4 shadow-sm">
             <Row className="align-items-center">

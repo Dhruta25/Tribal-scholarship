@@ -1,38 +1,109 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { CheckCircle2, Clock, AlertTriangle, XCircle, Award, ShieldCheck, FileText } from 'lucide-react';
 
 const statusConfig = {
-  DRAFT: { className: 'badge-draft', defaultText: 'Draft' },
-  SUBMITTED: { className: 'badge-submitted', defaultText: 'Submitted' },
-  OCR_PROCESSING: { className: 'badge-ocr-processing', defaultText: 'OCR Scanning' },
-  AUTO_VERIFIED: { className: 'badge-auto-verified', defaultText: 'Auto-Verified' },
-  DEFICIENT: { className: 'badge-deficient', defaultText: 'Deficient' },
-  UNDER_VERIFICATION: { className: 'badge-under-verification', defaultText: 'In Verification' },
-  UNDER_SCRUTINY: { className: 'badge-under-scrutiny', defaultText: 'Under Scrutiny' },
-  ELIGIBLE: { className: 'badge-eligible', defaultText: 'Eligible' },
-  INELIGIBLE: { className: 'badge-ineligible', defaultText: 'Ineligible' },
-  MERIT_LISTED: { className: 'badge-merit-listed', defaultText: 'Merit Listed' },
-  SELECTED: { className: 'badge-selected', defaultText: 'Selected (Award)' },
-  WAITLISTED: { className: 'badge-waitlisted', defaultText: 'Waitlisted' },
-  REJECTED: { className: 'badge-rejected', defaultText: 'Rejected' },
-  AWARD_ACCEPTED: { className: 'badge-award-accepted', defaultText: 'Award Accepted' },
-  DISBURSING: { className: 'badge-disbursing', defaultText: 'Disbursing' },
-  COMPLETED: { className: 'badge-completed', defaultText: 'Completed' }
+  DRAFT: {
+    className: 'civic-badge-neutral',
+    defaultText: 'Draft',
+    icon: FileText
+  },
+  SUBMITTED: {
+    className: 'civic-badge-info',
+    defaultText: 'Submitted',
+    icon: Clock
+  },
+  OCR_PROCESSING: {
+    className: 'civic-badge-info',
+    defaultText: 'OCR Scanning',
+    icon: ShieldCheck
+  },
+  AUTO_VERIFIED: {
+    className: 'civic-badge-success',
+    defaultText: 'Auto-Verified',
+    icon: CheckCircle2
+  },
+  DEFICIENT: {
+    className: 'civic-badge-warning',
+    defaultText: 'Deficient / Requires Action',
+    icon: AlertTriangle
+  },
+  UNDER_VERIFICATION: {
+    className: 'civic-badge-info',
+    defaultText: 'In Verification',
+    icon: Clock
+  },
+  UNDER_SCRUTINY: {
+    className: 'civic-badge-info',
+    defaultText: 'Under Scrutiny',
+    icon: Clock
+  },
+  ELIGIBLE: {
+    className: 'civic-badge-success',
+    defaultText: 'Eligible',
+    icon: CheckCircle2
+  },
+  INELIGIBLE: {
+    className: 'civic-badge-error',
+    defaultText: 'Ineligible',
+    icon: XCircle
+  },
+  MERIT_LISTED: {
+    className: 'civic-badge-info',
+    defaultText: 'Merit Listed',
+    icon: Award
+  },
+  SELECTED: {
+    className: 'civic-badge-success',
+    defaultText: 'Selected (Awarded)',
+    icon: Award
+  },
+  WAITLISTED: {
+    className: 'civic-badge-warning',
+    defaultText: 'Waitlisted',
+    icon: Clock
+  },
+  REJECTED: {
+    className: 'civic-badge-error',
+    defaultText: 'Rejected',
+    icon: XCircle
+  },
+  AWARD_ACCEPTED: {
+    className: 'civic-badge-success',
+    defaultText: 'Award Accepted',
+    icon: CheckCircle2
+  },
+  DISBURSING: {
+    className: 'civic-badge-info',
+    defaultText: 'Disbursing (DBT)',
+    icon: Clock
+  },
+  COMPLETED: {
+    className: 'civic-badge-neutral',
+    defaultText: 'Completed',
+    icon: CheckCircle2
+  }
 };
 
-const StatusBadge = ({ status = 'DRAFT', className = '', size = 'md' }) => {
+const StatusBadge = ({ status = 'DRAFT', className = '', size = 'md', showIcon = true }) => {
   const { t } = useLanguage();
-  const config = statusConfig[status] || { className: 'badge-draft', defaultText: status };
+  const config = statusConfig[status] || {
+    className: 'civic-badge-neutral',
+    defaultText: status,
+    icon: FileText
+  };
   const localizedLabel = t(`status.${status}`, config.defaultText);
+  const Icon = config.icon;
 
-  const paddingClass = size === 'sm' ? 'px-2 py-0.5' : (size === 'lg' ? 'px-3 py-1.5 fs-6' : 'px-2.5 py-1');
+  const sizeClass = size === 'sm' ? 'py-0.5 px-2 fs-6' : size === 'lg' ? 'py-1.5 px-3 fs-6' : '';
 
   return (
     <span
-      className={`badge rounded-pill fw-semibold ${config.className} ${paddingClass} ${className}`}
-      style={{ letterSpacing: '0.3px', fontSize: size === 'sm' ? '0.72rem' : undefined }}
+      className={`civic-badge ${config.className} ${sizeClass} ${className}`}
+      role="status"
     >
-      {localizedLabel}
+      {showIcon && Icon && <Icon size={size === 'sm' ? 12 : 14} aria-hidden="true" />}
+      <span>{localizedLabel}</span>
     </span>
   );
 };

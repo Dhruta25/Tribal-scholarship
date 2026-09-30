@@ -21,12 +21,14 @@ export const publishMeritList = async (req, res, next) => {
   try {
     const { schemeId } = req.params;
     const { remarks = '' } = req.body || {};
-    if (!remarks.trim()) {
+    if (typeof remarks !== 'string' || !remarks.trim()) {
       return res.status(400).json({
         success: false,
         message: 'A remark is required to publish the merit list (for example, the selection committee approval reference).'
       });
     }
+
+    if (await Application.exists({ schemeId, status: { $in: ['SELECTED', 'AWARD_ACCEPTED', 'DISBURSING', 'COMPLETED'] } })) return res.status(409).json({ success: false, message: 'This scheme already has a published selection. Existing awards cannot be republished.' });
 
     // Only applications an officer has recommended (MERIT_LISTED) can be selected
     const meritData = await generateSchemeMeritList(schemeId, { recommendedOnly: true });
@@ -234,19 +236,21 @@ export const getAuditLogs = async (req, res, next) => {
     if (action) filter.action = action;
     if (entityType) filter.entityType = entityType;
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const pageNumber = Math.max(1, Number.parseInt(page, 10) || 1);
+    const pageSize = Math.min(200, Math.max(1, Number.parseInt(limit, 10) || 50));
+    const skip = (pageNumber - 1) * pageSize;
 
     const total = await AuditLog.countDocuments(filter);
     const logs = await AuditLog.find(filter)
       .sort({ at: -1 })
       .skip(skip)
-      .limit(Number(limit));
+      .limit(pageSize);
 
     res.json({
       success: true,
       total,
-      page: Number(page),
-      pages: Math.ceil(total / Number(limit)),
+      page: pageNumber,
+      pages: Math.ceil(total / pageSize),
       logs
     });
   } catch (error) {

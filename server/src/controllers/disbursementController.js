@@ -48,17 +48,7 @@ export const getAllDisbursements = async (req, res, next) => {
       .sort({ status: 1, dueDate: 1 })
       .lean();
 
-    // Filter out and automatically clean up orphaned disbursements (missing application or applicant)
-    const orphaned = disbursements.filter(d => !d.applicationId || !d.applicationId.applicantId);
-    if (orphaned.length > 0) {
-      const orphanIds = orphaned.map(d => d._id);
-      setImmediate(async () => {
-        try {
-          await Disbursement.deleteMany({ _id: { $in: orphanIds } });
-        } catch {}
-      });
-      disbursements = disbursements.filter(d => d.applicationId && d.applicationId.applicantId);
-    }
+    disbursements = disbursements.filter(item => item.applicationId?.applicantId);
 
     const cache = {};
     for (const d of disbursements) {
@@ -179,7 +169,7 @@ export const releaseDisbursement = async (req, res, next) => {
     // Installment 2 onwards: previous one paid, and the guide-certified progress report uploaded
     if (n > 1) {
       const prev = await Disbursement.findOne({ applicationId: app._id, installmentNo: n - 1 });
-      if (prev && prev.status !== 'released') {
+      if (!prev || prev.status !== 'released') {
         return res.status(400).json({ success: false, message: `Release installment #${n - 1} first.` });
       }
       if (!disbursement.progressReportPath) {
@@ -192,6 +182,8 @@ export const releaseDisbursement = async (req, res, next) => {
 
     const txn = transactionId || `PFMS${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
 
+    const claimed = await Disbursement.findOneAndUpdate({ _id: disbursement._id, status: 'pending' }, { $set: { status: 'released', releasedAt: new Date(), transactionId: txn, remarks } }, { new: true });
+    if (!claimed) return res.status(409).json({ success: false, message: 'This installment is held or has already been released.' });
     disbursement.status = 'released';
     disbursement.releasedAt = new Date();
     disbursement.transactionId = txn;

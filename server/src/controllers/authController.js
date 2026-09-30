@@ -1,5 +1,6 @@
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
+import { randomInt } from 'node:crypto';
 import User from '../models/User.js';
 import Application from '../models/Application.js';
 import Document from '../models/Document.js';
@@ -11,241 +12,101 @@ import Disbursement from '../models/Disbursement.js';
 import { sendNotification } from '../services/notificationService.js';
 import { sendOtpEmail } from '../services/emailService.js';
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'development_jwt_secret_key_change_in_production', {
-    expiresIn: process.env.JWT_EXPIRE || '7d'
-  });
-};
+const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET || 'development_jwt_secret_key_change_in_production', {
+  expiresIn: process.env.JWT_EXPIRE || '7d'
+});
+const normalizeEmail = email => typeof email === 'string' ? email.trim().toLowerCase() : '';
+const validEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const issueOtp = () => String(randomInt(100000, 1000000));
+const otpResponse = (delivery, otp) => ({
+  delivery: delivery.mode,
+  ...(delivery.mode === 'development' ? { otpDebug: otp } : {})
+});
 
 export const register = async (req, res, next) => {
   try {
-    const { name, email, phone, password, role = 'applicant', preferredLanguage = 'en', profile = {} } = req.body;
-
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'An account with this email address already exists.'
-      });
+    const { name, phone, password, preferredLanguage = 'en', profile = {} } = req.body;
+    const email = normalizeEmail(req.body.email);
+    if (typeof name !== 'string' || !name.trim() || !validEmail(email) || typeof phone !== 'string' || !/^\+?[\d\s()-]{10,16}$/.test(phone)) {
+      return res.status(400).json({ success: false, message: 'A name, valid email address, and valid phone number are required.' });
     }
-
-    // Generate 6-digit OTP
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
-
-    const user = await User.create({
-      name,
-      email: email.toLowerCase().trim(),
-      phone,
-      passwordHash: password,
-      role: ['applicant', 'verifier', 'officer', 'admin'].includes(role) ? role : 'applicant',
-      isVerified: false,
-      otp,
-      otpExpiry,
-      preferredLanguage,
-      profile: {
-        category: 'ST',
-        ...profile
-      }
-    });
-
-    // Send real OTP email to user's registered inbox
-    await sendOtpEmail({
-      toEmail: user.email,
-      name: user.name,
-      otp
-    });
-
-    console.log('\n================== [REGISTRATION OTP GENERATED] ==================');
-    console.log(`[USER]: ${user.name} (${user.phone}) | [EMAIL]: ${user.email}`);
-    console.log(`[VERIFICATION OTP]: ${otp}`);
-    console.log(`[VALID FOR]: 15 Minutes`);
-    console.log('==================================================================\n');
-
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful. Verification OTP sent to your registered email address.',
-      userId: user._id,
-      email: user.email,
-      otpDebug: otp
-    });
-  } catch (error) {
-    next(error);
-  }
+    if (typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password) > 72) {
+      return res.status(400).json({ success: false, message: 'Password must contain at least 8 characters and at most 72 bytes.' });
+    }
+    if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
+      return res.status(400).json({ success: false, message: 'Profile must be an object.' });
+    }
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(409).json({ success: false, code: existing.isVerified ? 'ACCOUNT_EXISTS' : 'EMAIL_NOT_VERIFIED', email,
+        message: existing.isVerified ? 'An account with this email already exists. Please log in.' : 'This account is awaiting verification. Continue to verify or resend your code.' });
+    }
+    const otp = issueOtp();
+    const user = await User.create({ name: name.trim(), email, phone: phone.trim(), passwordHash: password,
+      role: 'applicant', isVerified: false, otp, otpExpiry: new Date(Date.now() + 15 * 60 * 1000),
+      preferredLanguage, profile: { category: 'ST', ...profile } });
+    try {
+      const delivery = await sendOtpEmail({ toEmail: email, name: user.name, otp });
+      return res.status(201).json({ success: true, userId: user._id, email,
+        message: delivery.mode === 'development' ? 'Account created. Use the development verification code shown below.' : 'Account created. A verification code was sent to your email.',
+        ...otpResponse(delivery, otp) });
+    } catch (error) {
+      // Keep the pending account so the user can retry delivery without losing registration.
+      return res.status(503).json({ success: false, code: 'OTP_DELIVERY_FAILED', email, userId: user._id,
+        message: 'Your account was created, but the verification email could not be sent. Please retry using Resend Code.' });
+    }
+  } catch (error) { next(error); }
 };
 
 export const resendOtp = async (req, res, next) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ success: false, message: 'Email address is required.' });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found with this email address.' });
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({ success: false, message: 'Account is already verified. Please log in.' });
-    }
-
-    // Generate fresh 6-digit OTP
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const email = normalizeEmail(req.body.email);
+    if (!validEmail(email)) return res.status(400).json({ success: false, message: 'A valid email address is required.' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'Account not found.' });
+    if (user.isVerified) return res.status(400).json({ success: false, message: 'Account is already verified. Please log in.' });
+    const otp = issueOtp();
+    const delivery = await sendOtpEmail({ toEmail: email, name: user.name, otp });
     user.otp = otp;
-    user.otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+    user.otpExpiry = new Date(Date.now() + 15 * 60 * 1000);
+    user.otpAttempts = 0;
     await user.save();
-
-    // Send real email
-    await sendOtpEmail({
-      toEmail: user.email,
-      name: user.name,
-      otp
-    });
-
-    console.log(`[Auth]: Resent fresh OTP ${otp} to ${user.email}`);
-
-    res.json({
-      success: true,
-      message: 'A fresh OTP has been sent to your email address.',
-      email: user.email,
-      otpDebug: otp
-    });
-  } catch (error) {
-    next(error);
-  }
+    res.json({ success: true, email, message: delivery.mode === 'development' ? 'A fresh development code is shown below.' : 'A fresh verification code was sent to your email.', ...otpResponse(delivery, otp) });
+  } catch (error) { next(error); }
 };
 
 export const verifyOtp = async (req, res, next) => {
   try {
-    const { email, otp } = req.body;
-
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found.' });
+    const email = normalizeEmail(req.body.email);
+    const otp = typeof req.body.otp === 'string' ? req.body.otp.trim() : '';
+    if (!validEmail(email) || !/^\d{6}$/.test(otp)) return res.status(400).json({ success: false, message: 'Provide your email and a six-digit verification code.' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'Account not found.' });
+    if (user.isVerified) return res.status(400).json({ success: false, message: 'Account is already verified. Please log in.' });
+    if (!user.otpExpiry || user.otpExpiry <= new Date()) return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+    if (user.otpAttempts >= 5) return res.status(429).json({ success: false, message: 'Too many incorrect codes. Request a new verification code.' });
+    if (user.otp !== otp) {
+      await User.updateOne({ _id: user._id, isVerified: false }, { $inc: { otpAttempts: 1 } });
+      return res.status(400).json({ success: false, message: 'Invalid verification code.' });
     }
-
-    if (user.isVerified) {
-      const token = generateToken(user._id);
-      return res.json({
-        success: true,
-        message: 'Account is already verified.',
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          preferredLanguage: user.preferredLanguage,
-          profile: user.profile
-        }
-      });
-    }
-
-    if (!otp || String(user.otp).trim() !== String(otp).trim()) {
-      return res.status(400).json({ success: false, message: 'Invalid OTP entered. Please check the code sent to your email.' });
-    }
-
-    if (user.otpExpiry && new Date() > user.otpExpiry) {
-      return res.status(400).json({ success: false, message: 'OTP has expired. Please click Resend OTP.' });
-    }
-
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
-    await user.save();
-
-    const token = generateToken(user._id);
-
-    res.json({
-      success: true,
-      message: 'Mobile number and email verified successfully!',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        preferredLanguage: user.preferredLanguage,
-        profile: user.profile
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
+    // Only one request can consume an unexpired code.
+    const verified = await User.findOneAndUpdate({ _id: user._id, isVerified: false, otp, otpExpiry: { $gt: new Date() }, otpAttempts: { $lt: 5 } },
+      { $set: { isVerified: true, otp: null, otpExpiry: null, otpAttempts: 0 } }, { new: true });
+    if (!verified) return res.status(400).json({ success: false, message: 'This code has already been used or expired.' });
+    res.json({ success: true, message: 'Email verified successfully.', token: generateToken(verified._id), user: verified });
+  } catch (error) { next(error); }
 };
-
-const MOCK_USERS = [
-  { id: '65f1a2b3c4d5e6f7a8b9c0d1', name: 'System Administrator', email: 'admin@mota.gov.in', role: 'admin', isVerified: true },
-  { id: '65f1a2b3c4d5e6f7a8b9c0d2', name: 'Pooja Marandi (Joint Commissioner)', email: 'officer1@mota.gov.in', role: 'officer', isVerified: true },
-  { id: '65f1a2b3c4d5e6f7a8b9c0d3', name: 'Anil Oraon (Scrutiny Director)', email: 'officer2@mota.gov.in', role: 'officer', isVerified: true },
-  { id: '65f1a2b3c4d5e6f7a8b9c0d4', name: 'Sunita Meena (Senior Verifier)', email: 'verifier1@mota.gov.in', role: 'verifier', isVerified: true },
-  { id: '65f1a2b3c4d5e6f7a8b9c0d5', name: 'Rajesh Gond (Verification Officer)', email: 'verifier2@mota.gov.in', role: 'verifier', isVerified: true },
-  { id: '65f1a2b3c4d5e6f7a8b9c0d6', name: 'Rahul Kumar', email: 'rahul.st@example.com', role: 'applicant', isVerified: true, profile: { category: 'ST', familyIncome: 300000, education: { level: 'masters', course: 'M.Sc. Biotechnology', marksPercent: 74.5 } } }
-];
 
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Please provide both email and password.' });
-    }
-
-    const cleanEmail = email.toLowerCase().trim();
-    let user = null;
-    try {
-      user = await User.findOne({ email: cleanEmail });
-    } catch (e) {
-      user = null;
-    }
-
-    if (!user) {
-      // Check fallback mock staff accounts
-      const fallback = MOCK_USERS.find(u => u.email.toLowerCase() === cleanEmail);
-      if (fallback) {
-        const token = generateToken(fallback.id);
-        return res.json({
-          success: true,
-          message: 'Logged in successfully (Demo Session).',
-          token,
-          user: fallback
-        });
-      }
-      return res.status(401).json({ success: false, message: 'Invalid credentials entered.' });
-    }
-
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      // Check fallback password if DB has default hash
-      const fallback = MOCK_USERS.find(u => u.email.toLowerCase() === cleanEmail);
-      if (!fallback) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials entered.' });
-      }
-    }
-
-    const token = generateToken(user._id);
-
-    res.json({
-      success: true,
-      message: 'Logged in successfully.',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        isVerified: user.isVerified,
-        preferredLanguage: user.preferredLanguage,
-        profile: user.profile
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
+    const email = normalizeEmail(req.body.email);
+    const { password } = req.body;
+    if (!validEmail(email) || typeof password !== 'string' || !password) return res.status(400).json({ success: false, message: 'Provide a valid email and password.' });
+    const user = await User.findOne({ email });
+    if (!user || !(await user.matchPassword(password))) return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+    if (!user.isVerified) return res.status(403).json({ success: false, code: 'EMAIL_NOT_VERIFIED', email, message: 'Verify your email before logging in.' });
+    res.json({ success: true, message: 'Logged in successfully.', token: generateToken(user._id), user });
+  } catch (error) { next(error); }
 };
 
 export const getMe = async (req, res) => {
@@ -267,8 +128,9 @@ export const updateProfile = async (req, res, next) => {
     if (preferredLanguage) user.preferredLanguage = preferredLanguage;
     if (profile) {
       user.profile = {
-        ...user.profile.toObject(),
-        ...profile
+        ...(user.profile?.toObject?.() || user.profile || {}),
+        ...profile,
+        education: { ...(user.profile?.education?.toObject?.() || user.profile?.education || {}), ...(profile.education || {}) }
       };
     }
 

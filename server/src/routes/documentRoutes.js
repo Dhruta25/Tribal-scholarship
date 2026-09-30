@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post('/:appId/upload', protect, upload.single('file'), uploadDocument);
 router.get('/:id/status', protect, getDocumentStatus);
-router.get('/:id/file', serveDocumentFile);
+router.get('/:id/file', protect, serveDocumentFile);
 router.delete('/:id', protect, deleteDocument);
 router.post('/:id/reupload', protect, upload.single('file'), reuploadDocument);
 

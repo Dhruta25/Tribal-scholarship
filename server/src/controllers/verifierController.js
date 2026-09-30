@@ -29,20 +29,7 @@ export const getVerifierQueue = async (req, res, next) => {
       .populate('applicantId', '-passwordHash')
       .sort({ updatedAt: -1 });
 
-    // Ensure orphaned applications (missing applicantId) are filtered out and cleaned up
-    const orphanedApps = applications.filter(a => !a.applicantId);
-    if (orphanedApps.length > 0) {
-      const orphanIds = orphanedApps.map(a => a._id);
-      setImmediate(async () => {
-        try {
-          await Document.deleteMany({ applicationId: { $in: orphanIds } });
-          await Deficiency.deleteMany({ applicationId: { $in: orphanIds } });
-          await VerificationLog.deleteMany({ applicationId: { $in: orphanIds } });
-          await Application.deleteMany({ _id: { $in: orphanIds } });
-        } catch {}
-      });
-      applications = applications.filter(a => a.applicantId);
-    }
+    applications = applications.filter(app => app.applicantId && app.schemeId);
 
     // Filter by flagged items if requested
     if (flagged === 'true') {
@@ -128,6 +115,8 @@ export const documentDecision = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Document not found.' });
     }
 
+    if (!doc.applicationId || !FORWARDABLE_STATUSES.includes(doc.applicationId.status)) return res.status(409).json({ success: false, message: 'This application is not awaiting verification.' });
+    if (doc.ocrStatus === 'pending') return res.status(409).json({ success: false, message: 'Wait for OCR processing to finish.' });
     doc.verificationStatus = decision;
     doc.officerRemark = remark;
     doc.verifiedBy = req.user._id;
@@ -231,6 +220,9 @@ export const forwardApplicationToOfficer = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'No documents have been uploaded yet.' });
     }
 
+    const missing = (app.schemeId?.requiredDocuments || []).filter(item => item.required && !allDocs.some(doc => doc.docKey === item.key));
+    if (missing.length || allDocs.some(doc => doc.ocrStatus === 'pending')) return res.status(409).json({ success: false, message: 'Upload all required documents and wait for OCR processing before forwarding.' });
+
     const rejectedDocs = allDocs.filter(d => d.verificationStatus === 'rejected');
     if (rejectedDocs.length > 0) {
       return res.status(400).json({
@@ -329,6 +321,8 @@ export const raiseDeficiency = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Application not found.' });
     }
 
+    if (!FORWARDABLE_STATUSES.includes(application.status)) return res.status(409).json({ success: false, message: 'This application is not awaiting verification.' });
+    if (!Number.isInteger(Number(dueDays)) || Number(dueDays) < 1 || Number(dueDays) > 90) return res.status(400).json({ success: false, message: 'Due days must be between 1 and 90.' });
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + Number(dueDays));
 

@@ -39,12 +39,15 @@ const KisanTopbar = () => {
     <header className="ks-topbar px-4 py-2 flex-wrap gap-3" style={{ height: 'auto', minHeight: '68px' }}>
       {/* Brand Emblem Logo Header */}
       <Link to="/" className="ks-brand-header text-decoration-none py-0 me-2">
-        <div className="ks-brand-logo-icon">
-          <Award size={18} />
-        </div>
+        <img
+          src="/images/vidyasetu-logo.jpg"
+          alt="VIDYA SETU"
+          className="rounded-1 flex-shrink-0"
+          style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+        />
         <div>
           <span className="ks-brand-title d-block" style={{ fontSize: '1.05rem', lineHeight: '1.1' }}>
-            MoTA VanSetu
+            VIDYA<span style={{ color: 'var(--color-accent)' }}>SETU</span>
           </span>
           <span className="text-muted" style={{ fontSize: '0.65rem', letterSpacing: '0.04em' }}>
             TRIBAL SCHOLARSHIPS

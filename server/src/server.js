@@ -1,113 +1,30 @@
-import express from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
+import './config/env.js';
+import mongoose from 'mongoose';
+import app from './app.js';
 import connectDB from './config/db.js';
-import { errorHandler } from './middleware/errorHandler.js';
 import { initReminderService } from './services/reminderService.js';
 
-// Route Imports
-import authRoutes from './routes/authRoutes.js';
-import schemeRoutes from './routes/schemeRoutes.js';
-import eligibilityRoutes from './routes/eligibilityRoutes.js';
-import applicationRoutes from './routes/applicationRoutes.js';
-import documentRoutes from './routes/documentRoutes.js';
-import verifierRoutes from './routes/verifierRoutes.js';
-import officerRoutes from './routes/officerRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
-import dashboardRoutes from './routes/dashboardRoutes.js';
-import chatbotRoutes from './routes/chatbotRoutes.js';
-import notificationRoutes from './routes/notificationRoutes.js';
-import disbursementRoutes from './routes/disbursementRoutes.js';
-import mlRoutes from './routes/mlRoutes.js';
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-
-// Connect to MongoDB
-connectDB();
-
-// Middlewares
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-    if (!origin) return callback(null, true);
-    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-      return callback(null, true);
-    }
-    if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) {
-      return callback(null, true);
-    }
-    return callback(null, true); // Permissive for local development
-  },
-  credentials: true
-}));
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
-}
-
-// Serve uploaded files statically
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Health Check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'online',
-    service: 'MoTA Scholarship & Fellowship Management System API',
-    ps: 'SIH PS 26239',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Mount Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/schemes', schemeRoutes);
-app.use('/api/eligibility', eligibilityRoutes);
-app.use('/api/applications', applicationRoutes);
-app.use('/api/documents', documentRoutes);
-app.use('/api/verifier', verifierRoutes);
-app.use('/api/officer', officerRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/chatbot', chatbotRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/disbursements', disbursementRoutes);
-app.use('/api/ml', mlRoutes);
-
-// Central Error Handler
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 5001;
-
-const server = app.listen(PORT, () => {
-  console.log(`\n================================================================`);
-  console.log(`🏛️  MoTA Scholarship & Fellowship Management Backend`);
-  console.log(`🚀  Server running on http://localhost:${PORT}`);
-  console.log(`📊  API Health: http://localhost:${PORT}/api/health`);
-  console.log(`================================================================\n`);
-
-  // Start background reminder service
-  initReminderService();
-});
-
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`\n⚠️  [PORT ${PORT} IS BUSY]: Another process is already running on port ${PORT}.`);
-    console.error(`💡 Tip: Change PORT in server/.env or stop the existing node process.\n`);
-  } else {
-    console.error(`[Server Error]:`, err.message);
+try {
+  if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET.includes('your_super_secret'))) {
+    throw new Error('Set a unique JWT_SECRET of at least 32 characters in production.');
   }
-});
-
-export default app;
+  await connectDB();
+  const port = Number(process.env.PORT || 5001);
+  const server = app.listen(port, () => console.log(`Scholarship API ready at http://localhost:${port}/api`));
+  const stopReminders = initReminderService();
+  server.on('error', async error => {
+    console.error(error.code === 'EADDRINUSE' ? `Port ${port} is already in use.` : error.message);
+    stopReminders();
+    await mongoose.disconnect();
+    process.exitCode = 1;
+  });
+  const shutdown = () => {
+    stopReminders();
+    server.close(async () => { await mongoose.disconnect(); process.exit(0); });
+  };
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+} catch (error) {
+  console.error(`Backend startup failed: ${error.message}`);
+  process.exitCode = 1;
+}

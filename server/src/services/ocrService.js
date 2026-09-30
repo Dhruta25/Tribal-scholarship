@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -283,37 +284,32 @@ export const extractFieldsByDocType = (docKey, rawText) => {
 export const performOCR = async (filePath, docKey) => {
   const ext = path.extname(filePath).toLowerCase();
   let rawText = '';
-  let confidence = 85; // baseline confidence
+  let confidence = 0;
 
   try {
     if (ext === '.pdf') {
       const dataBuffer = fs.readFileSync(filePath);
-      const pdfData = await pdfParse(dataBuffer);
+      const pdfData = await pdfParse(new Uint8Array(dataBuffer));
       rawText = pdfData.text || '';
       // If PDF has embedded text, confidence is high
       confidence = rawText.trim().length > 50 ? 94 : 70;
     } else if (['.jpg', '.jpeg', '.png', '.bmp', '.webp'].includes(ext)) {
       // Use tesseract worker for OCR
-      const worker = await createWorker('eng');
-      const ret = await worker.recognize(filePath);
-      rawText = ret.data.text || '';
-      confidence = Math.round(ret.data.confidence || 85);
-      await worker.terminate();
+      const worker = await createWorker('eng', 1, { langPath: fileURLToPath(new URL('../', import.meta.url)), gzip: false, cacheMethod: 'none' });
+      try {
+        const ret = await worker.recognize(filePath);
+        rawText = ret.data.text || '';
+        confidence = Math.round(ret.data.confidence || 0);
+      } finally { await worker.terminate(); }
     } else {
       // Fallback for text files or mock files
       rawText = fs.readFileSync(filePath, 'utf-8');
       confidence = 90;
     }
   } catch (error) {
-    console.warn(`[OCR Engine Warning]: Direct extraction failed (${error.message}). Attempting fallback reader.`);
-    try {
-      rawText = fs.readFileSync(filePath, 'utf-8');
-      confidence = 75;
-    } catch {
-      rawText = '';
-      confidence = 0;
-    }
+    throw new Error(`Document text extraction failed: ${error.message}`);
   }
+  if (!rawText.trim()) throw new Error('No readable text was found. Upload a clear image or a PDF containing selectable text.');
 
   const detectedDocType = classifyDocumentType(rawText);
   const extracted = extractFieldsByDocType(docKey, rawText);
@@ -510,8 +506,8 @@ export const processDocumentAsync = async (documentId) => {
     const declaredData = {
       name: applicant.name,
       category: applicant.profile?.category || 'ST',
-      familyIncome: application.formData?.familyIncome || applicant.profile?.familyIncome,
-      marksPercent: application.formData?.marksPercent || applicant.profile?.education?.marksPercent,
+      familyIncome: application.formData?.familyIncome ?? applicant.profile?.familyIncome,
+      marksPercent: application.formData?.marksPercent ?? applicant.profile?.education?.marksPercent,
       bankAccount: application.formData?.bankAccount || applicant.profile?.bankAccount,
       aadhaarLast4: application.formData?.aadhaarLast4 || applicant.profile?.aadhaarLast4,
       ...application.formData
@@ -571,26 +567,8 @@ export const processDocumentAsync = async (documentId) => {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 7); // 7 days grace period
 
-      const deficiency = await Deficiency.create({
-        applicationId: application._id,
-        docKey: doc.docKey,
-        reason,
-        raisedBy: 'AI_OCR_ENGINE',
-        dueDate,
-        status: 'open'
-      });
-
-      // Update Application stage to DEFICIENT (only if not currently a draft)
-      if (application.status !== 'DRAFT') {
-        application.status = 'DEFICIENT';
-        application.stageHistory.push({
-          stage: 'DEFICIENT',
-          by: 'AI OCR Engine',
-          remark: `Deficiency raised for ${doc.docKey}: ${reason}`
-        });
-        await application.save();
-      }
-
+      await Deficiency.findOneAndUpdate({ applicationId: application._id, docKey: doc.docKey, status: 'open', raisedBy: 'AI_OCR_ENGINE' },
+        { $set: { reason, dueDate }, $setOnInsert: { applicationId: application._id, docKey: doc.docKey, raisedBy: 'AI_OCR_ENGINE', status: 'open' } }, { upsert: true });
       // Send deficiency notification
       await sendNotification({
         userId: applicant._id,
@@ -600,26 +578,26 @@ export const processDocumentAsync = async (documentId) => {
         link: `/applicant/deficiencies`
       });
     } else {
-      // Check if all required documents for the application are uploaded and verified
-      const allDocs = await Document.find({ applicationId: application._id });
-      const reqKeys = scheme?.requiredDocuments?.map(d => d.key) || [];
-      const uploadedKeys = allDocs.map(d => d.docKey);
-      const allUploaded = reqKeys.every(k => uploadedKeys.includes(k));
-
-      if (allUploaded && application.status === 'OCR_PROCESSING') {
-        const hasNeedsReview = allDocs.some(d => d.verificationStatus === 'needs_review');
-        application.status = hasNeedsReview ? 'UNDER_VERIFICATION' : 'AUTO_VERIFIED';
-        application.stageHistory.push({
-          stage: application.status,
-          by: 'AI OCR Engine',
-          remark: hasNeedsReview
-            ? 'All documents processed; flagged items queued for Verifier review.'
-            : 'All documents auto-verified with high confidence.'
-        });
-        await application.save();
-      }
+      await Deficiency.updateMany({ applicationId: application._id, docKey: doc.docKey, status: 'open', raisedBy: 'AI_OCR_ENGINE' },
+        { $set: { status: 'resolved', resolvedAt: new Date(), reuploadedDocId: doc._id } });
     }
+    await refreshApplicationVerification(application._id);
   } catch (error) {
     console.error(`[Process Document Async Error]: ${error.message}`);
+    const doc = await Document.findByIdAndUpdate(documentId, { $set: { ocrStatus: 'failed', verificationStatus: 'needs_review', confidence: 0,
+      mismatches: [{ field: 'clarity', severity: 'critical', message: 'Text could not be extracted. Upload a readable file or request manual verification.' }] } });
+    if (doc) await refreshApplicationVerification(doc.applicationId);
   }
 };
+
+async function refreshApplicationVerification(applicationId) {
+  const app = await Application.findById(applicationId);
+  if (!app || !['SUBMITTED', 'OCR_PROCESSING', 'AUTO_VERIFIED', 'UNDER_VERIFICATION', 'DEFICIENT'].includes(app.status)) return;
+  const docs = await Document.find({ applicationId });
+  const open = await Deficiency.countDocuments({ applicationId, status: 'open' });
+  const status = open ? 'DEFICIENT' : docs.some(doc => doc.ocrStatus === 'pending') ? 'OCR_PROCESSING' :
+    docs.some(doc => !['approved', 'auto_ok'].includes(doc.verificationStatus)) ? 'UNDER_VERIFICATION' : 'AUTO_VERIFIED';
+  if (status !== app.status) await Application.updateOne({ _id: applicationId, status: app.status }, {
+    $set: { status }, $push: { stageHistory: { stage: status, by: 'OCR Engine', at: new Date(), remark: 'Document processing completed; verification queue updated.' } }
+  });
+}

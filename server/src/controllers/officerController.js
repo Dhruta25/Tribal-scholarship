@@ -8,7 +8,9 @@ export const getScrutinyList = async (req, res, next) => {
     const { schemeId, status } = req.query;
 
     const filter = {};
-    if (status && status !== 'ALL') {
+    if (status === 'ALL') {
+      filter.status = { $nin: ['DRAFT', 'SUBMITTED', 'OCR_PROCESSING', 'UNDER_VERIFICATION', 'DEFICIENT'] };
+    } else if (status) {
       filter.status = status;
     } else {
       filter.status = { $in: ['UNDER_SCRUTINY', 'AUTO_VERIFIED', 'ELIGIBLE', 'INELIGIBLE'] };
@@ -23,18 +25,7 @@ export const getScrutinyList = async (req, res, next) => {
       .populate('applicantId', '-passwordHash')
       .sort({ updatedAt: -1 });
 
-    // Clean up orphaned applications
-    const orphanedApps = applications.filter(a => !a.applicantId);
-    if (orphanedApps.length > 0) {
-      const orphanIds = orphanedApps.map(a => a._id);
-      setImmediate(async () => {
-        try {
-          await Document.deleteMany({ applicationId: { $in: orphanIds } });
-          await Application.deleteMany({ _id: { $in: orphanIds } });
-        } catch {}
-      });
-      applications = applications.filter(a => a.applicantId);
-    }
+    applications = applications.filter(app => app.applicantId && app.schemeId);
 
     const appIds = applications.map(a => a._id);
     const documents = await Document.find({ applicationId: { $in: appIds } });
@@ -75,6 +66,7 @@ export const makeEligibilityDecision = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Application not found.' });
     }
 
+    if (!['UNDER_SCRUTINY', 'ELIGIBLE', 'INELIGIBLE'].includes(application.status)) return res.status(409).json({ success: false, message: 'The application must complete document verification before scrutiny.' });
     const beforeStatus = application.status;
     application.status = decision;
     application.officerRemarks = remarks;

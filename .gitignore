@@ -44,7 +44,8 @@ pnpm-debug.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
-.vscode/
+.vscode/*
+!.vscode/tasks.json
 .idea/
 *.sublime-project
 *.sublime-workspace
@@ -69,3 +70,8 @@ crash.*.log
 *.tfvars
 !*.tfvars.example
 terraform.rc
+
+# Persistent local development database and downloaded test runtime
+server/.local-data/
+server/.cache/
+server/.test-data/

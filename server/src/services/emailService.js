@@ -1,20 +1,20 @@
 import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import '../config/env.js';
 
 // Create reusable transporter
 const createTransporter = () => {
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
+  if (process.env.OTP_DELIVERY === 'development' && process.env.NODE_ENV !== 'production') return null;
 
-  if (!emailUser || !emailPass) {
+  if (!emailUser || !emailPass || emailUser === 'your-email@gmail.com' || emailPass === 'your-16-character-app-password') {
     return null;
   }
 
   // Custom SMTP configuration if host is specified
   if (process.env.SMTP_HOST) {
     return nodemailer.createTransport({
+      connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000,
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587', 10),
       secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
@@ -27,6 +27,7 @@ const createTransporter = () => {
 
   // Default to standard Gmail service
   return nodemailer.createTransport({
+      connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000,
     service: 'gmail',
     auth: {
       user: emailUser,
@@ -40,9 +41,14 @@ const createTransporter = () => {
  */
 export const sendOtpEmail = async ({ toEmail, name, otp }) => {
   const transporter = createTransporter();
+  if (!transporter) {
+    if (process.env.OTP_DELIVERY === 'development' && process.env.NODE_ENV !== 'production') return { mode: 'development' };
+    throw Object.assign(new Error('Email delivery is not configured. Contact the portal administrator.'), { status: 503 });
+  }
+  const safeName = String(name || 'Applicant').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 
   const mailOptions = {
-    from: `"Ministry of Tribal Affairs (MoTA)" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@mota.gov.in'}>`,
+    from: process.env.EMAIL_FROM || { name: 'MoTA Scholarship Portal', address: process.env.EMAIL_USER },
     to: toEmail,
     subject: `🔐 ${otp} is your MoTA Scholarship Portal Verification Code`,
     html: `
@@ -56,7 +62,7 @@ export const sendOtpEmail = async ({ toEmail, name, otp }) => {
         </div>
 
         <div style="background-color: #ffffff; padding: 28px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-          <p style="font-size: 16px; color: #1e293b; margin-top: 0;">Dear <strong>${name || 'Applicant'}</strong>,</p>
+          <p style="font-size: 16px; color: #1e293b; margin-top: 0;">Dear <strong>${safeName}</strong>,</p>
           <p style="font-size: 14px; color: #475569; line-height: 1.6;">
             Thank you for registering on the <strong>AI-Enabled Scholarship & Fellowship Management System for Scheduled Tribes (ST)</strong>.
           </p>
@@ -88,21 +94,12 @@ export const sendOtpEmail = async ({ toEmail, name, otp }) => {
     text: `Ministry of Tribal Affairs (MoTA)\n\nDear ${name || 'Applicant'},\n\nYour 6-digit verification code is: ${otp}\nThis code is valid for 15 minutes.\n\nNever share your OTP with anyone.`
   };
 
-  if (transporter) {
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`[Email Service]: ✅ OTP Email sent successfully to ${toEmail} (Message ID: ${info.messageId})`);
-      return { success: true, messageId: info.messageId };
-    } catch (err) {
-      console.error(`[Email Service Error]: ❌ Failed to deliver email to ${toEmail}:`, err.message);
-      return { success: false, error: err.message };
-    }
-  } else {
-    console.log(`\n================== [EMAIL SERVICE (SMTP NOT CONFIGURED)] ==================`);
-    console.log(`[TO]: ${toEmail}`);
-    console.log(`[OTP CODE]: ${otp}`);
-    console.log(`[NOTE]: To send real emails to inboxes, set EMAIL_USER and EMAIL_PASS in server/.env`);
-    console.log(`===========================================================================\n`);
-    return { success: false, reason: 'NO_SMTP_CONFIG' };
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    if (!info.accepted?.length) throw new Error('SMTP did not accept the recipient.');
+    return { mode: 'email', messageId: info.messageId };
+  } catch (error) {
+    console.error('[Email delivery failed]:', error.code || 'SMTP_ERROR');
+    throw Object.assign(new Error('Could not send the verification email. Please try again.'), { status: 503 });
   }
 };

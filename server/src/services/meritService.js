@@ -12,10 +12,10 @@ export const calculateApplicationMeritScore = (application, scheme) => {
   const profile = applicant?.profile || {};
 
   // Extract raw values
-  const marks = Number(formData.marksPercent || profile.education?.marksPercent || 0);
-  const entranceScore = Number(formData.entranceScore || formData.gateScore || formData.greScore || formData.ugcNetScore || 75);
-  const interviewScore = Number(formData.interviewScore || 80);
-  const researchScore = Number(formData.researchPapersPublished ? Math.min(formData.researchPapersPublished * 20, 100) : 70);
+  const marks = Number(formData.marksPercent ?? profile.education?.marksPercent ?? 0);
+  const entranceScore = Number(formData.entranceScore ?? formData.gateScore ?? formData.greScore ?? formData.ugcNetScore ?? 0);
+  const interviewScore = Number(formData.interviewScore ?? 0);
+  const researchScore = Number(formData.researchPapersPublished ? Math.min(formData.researchPapersPublished * 20, 100) : 0);
 
   // Normalize scores to 0 - 100
   const normMarks = Math.max(0, Math.min(100, marks));
@@ -46,7 +46,7 @@ export const calculateApplicationMeritScore = (application, scheme) => {
       compValue = normResearch;
       label = 'Research & Publications';
     } else {
-      compValue = Number(formData[key] || 70);
+      compValue = Number(formData[key] ?? 0);
       label = key.replace(/_/g, ' ');
     }
 
@@ -77,7 +77,7 @@ export const calculateApplicationMeritScore = (application, scheme) => {
  */
 export const generateSchemeMeritList = async (schemeId, { recommendedOnly = false } = {}) => {
   const scheme = await Scheme.findById(schemeId);
-  if (!scheme) throw new Error('Scheme not found');
+  if (!scheme) throw Object.assign(new Error('Scheme not found'), { status: 404 });
 
   // Preview shows everyone still in the running; publishing uses only officer-recommended applications
   const statuses = recommendedOnly
@@ -131,12 +131,12 @@ export const generateSchemeMeritList = async (schemeId, { recommendedOnly = fals
     item.meritRank = index + 1;
   });
 
-  const totalSeats = scheme.totalSeats || 50;
+  const totalSeats = scheme.totalSeats ?? 0;
   const quotas = scheme.reservationQuota || { female: 0.30, disability: 0.04, pvtg: 0.05 };
 
-  const femaleSeatsRequired = Math.floor(totalSeats * (quotas.female || 0.30));
-  const pwdSeatsRequired = Math.floor(totalSeats * (quotas.disability || 0.04));
-  const pvtgSeatsRequired = Math.floor(totalSeats * (quotas.pvtg || 0.05));
+  const femaleSeatsRequired = Math.floor(totalSeats * (quotas.female ?? 0.30));
+  const pwdSeatsRequired = Math.floor(totalSeats * (quotas.disability ?? 0.04));
+  const pvtgSeatsRequired = Math.floor(totalSeats * (quotas.pvtg ?? 0.05));
 
   const selectedSet = new Set();
   const provisionalList = [];
@@ -149,49 +149,27 @@ export const generateSchemeMeritList = async (schemeId, { recommendedOnly = fals
     }
   }
 
-  // 2. Second Pass: Verify Horizontal Quotas (Female, PwD, PVTG)
-  const currentFemaleCount = provisionalList.filter(i => i.isFemale).length;
-  const currentPwdCount = provisionalList.filter(i => i.isDisability).length;
-  const currentPvtgCount = provisionalList.filter(i => i.isPvtg).length;
-
-  // Female quota adjustment
-  if (currentFemaleCount < femaleSeatsRequired) {
-    const needed = femaleSeatsRequired - currentFemaleCount;
-    const unselectedFemales = scoredApps.filter(i => !selectedSet.has(i.application._id.toString()) && i.isFemale);
-    for (let i = 0; i < Math.min(needed, unselectedFemales.length); i++) {
-      const candidate = unselectedFemales[i];
-      // Replace the lowest scoring open merit non-protected candidate if total seats reached
+  // Meet horizontal quotas through replacements without exceeding the seat count.
+  const quotaTargets = [['isFemale', femaleSeatsRequired, 'Female'], ['isDisability', pwdSeatsRequired, 'PwD'], ['isPvtg', pvtgSeatsRequired, 'PVTG']];
+  for (const [key, target, label] of quotaTargets) {
+    for (const candidate of scoredApps.filter(item => item[key] && !selectedSet.has(String(item.application._id)))) {
+      const count = flag => provisionalList.filter(item => item[flag]).length;
+      if (count(key) >= target) break;
       if (provisionalList.length >= totalSeats) {
-        for (let j = provisionalList.length - 1; j >= 0; j--) {
-          if (!provisionalList[j].isFemale && !provisionalList[j].isDisability && !provisionalList[j].isPvtg) {
-            const removed = provisionalList.splice(j, 1)[0];
-            selectedSet.delete(removed.application._id.toString());
-            break;
-          }
+        let replaceAt = -1;
+        for (let index = provisionalList.length - 1; index >= 0; index--) {
+          const current = provisionalList[index];
+          if (current[key]) continue;
+          const preservesQuotas = quotaTargets.every(([flag, minimum]) => !current[flag] || candidate[flag] || count(flag) > minimum);
+          if (preservesQuotas) { replaceAt = index; break; }
         }
+        if (replaceAt < 0) continue;
+        const [removed] = provisionalList.splice(replaceAt, 1);
+        selectedSet.delete(String(removed.application._id));
       }
-      provisionalList.push({ ...candidate, selectionCategory: 'Horizontal Quota (Female)' });
-      selectedSet.add(candidate.application._id.toString());
-    }
-  }
-
-  // PwD quota adjustment
-  if (currentPwdCount < pwdSeatsRequired) {
-    const needed = pwdSeatsRequired - currentPwdCount;
-    const unselectedPwd = scoredApps.filter(i => !selectedSet.has(i.application._id.toString()) && i.isDisability);
-    for (let i = 0; i < Math.min(needed, unselectedPwd.length); i++) {
-      const candidate = unselectedPwd[i];
-      if (provisionalList.length >= totalSeats) {
-        for (let j = provisionalList.length - 1; j >= 0; j--) {
-          if (!provisionalList[j].isDisability && !provisionalList[j].isFemale) {
-            const removed = provisionalList.splice(j, 1)[0];
-            selectedSet.delete(removed.application._id.toString());
-            break;
-          }
-        }
-      }
-      provisionalList.push({ ...candidate, selectionCategory: 'Horizontal Quota (PwD)' });
-      selectedSet.add(candidate.application._id.toString());
+      provisionalList.push({ ...candidate, selectionCategory: `Horizontal Quota (${label})` });
+      selectedSet.add(String(candidate.application._id));
+      provisionalList.sort((a, b) => b.meritScore - a.meritScore);
     }
   }
 

@@ -20,7 +20,7 @@ export const getDashboardStats = async (req, res, next) => {
       status: { $in: ['SELECTED', 'ELIGIBLE', 'REJECTED'] }
     }).select('submittedAt updatedAt');
 
-    let avgProcessingDays = 4.2;
+    let avgProcessingDays = 0;
     if (completedApps.length > 0) {
       const totalDays = completedApps.reduce((sum, app) => {
         const diffMs = new Date(app.updatedAt) - new Date(app.submittedAt);
@@ -69,8 +69,8 @@ export const getTimeseries = async (req, res, next) => {
 
     res.json({
       success: true,
-      labels: labels.length > 0 ? labels : ['May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026'],
-      data: data.length > 0 ? data : [12, 19, 28, 45, 62]
+      labels,
+      data
     });
   } catch (error) {
     next(error);
@@ -84,7 +84,7 @@ export const getByState = async (req, res, next) => {
 
     const stateMap = {};
     apps.forEach(a => {
-      const state = a.applicantId?.profile?.state || 'Jharkhand';
+      const state = a.applicantId?.profile?.state || 'Unknown';
       stateMap[state] = (stateMap[state] || 0) + 1;
     });
 

@@ -6,20 +6,22 @@ import Deficiency from '../models/Deficiency.js';
 import VerificationLog from '../models/VerificationLog.js';
 import AuditLog from '../models/AuditLog.js';
 import Disbursement from '../models/Disbursement.js';
-import { evaluate } from '../services/rulesEngine.js';
+import { evaluate, buildApplicantContext } from '../services/rulesEngine.js';
 import { sendNotification } from '../services/notificationService.js';
 
 export const createApplication = async (req, res, next) => {
   try {
     const { schemeId, formData = {} } = req.body;
     const applicantId = req.user._id;
+    if (!schemeId) return res.status(400).json({ success: false, message: 'Select a scheme.' });
+    if (!formData || typeof formData !== 'object' || Array.isArray(formData)) return res.status(400).json({ success: false, message: 'Application form data must be an object.' });
 
     const scheme = await Scheme.findById(schemeId);
     if (!scheme) {
       return res.status(404).json({ success: false, message: 'Scheme not found.' });
     }
 
-    if (!scheme.isActive) {
+    if (!scheme.isActive || new Date() < scheme.openDate || new Date() > scheme.closeDate) {
       return res.status(400).json({ success: false, message: 'This scheme is currently not accepting new applications.' });
     }
 
@@ -84,6 +86,7 @@ export const updateDraftApplication = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { formData } = req.body;
+    if (!formData || typeof formData !== 'object' || Array.isArray(formData)) return res.status(400).json({ success: false, message: 'Application form data must be an object.' });
 
     const application = await Application.findOne({ _id: id, applicantId: req.user._id });
     if (!application) {
@@ -128,6 +131,19 @@ export const submitApplication = async (req, res, next) => {
 
     const scheme = application.schemeId;
     const applicant = application.applicantId;
+    if (!scheme || !scheme.isActive || new Date() < scheme.openDate || new Date() > scheme.closeDate) return res.status(400).json({ success: false, message: 'The application window for this scheme is closed.' });
+    const fieldErrors = [];
+    for (const field of scheme.formFields || []) {
+      const value = application.formData?.[field.key];
+      const empty = value === undefined || value === null || (typeof value === 'string' && !value.trim());
+      if (field.required && (empty || (field.type === 'checkbox' && value !== true))) fieldErrors.push(`${field.label} is required`);
+      if (!empty && field.type === 'number' && (!['string', 'number'].includes(typeof value) || !Number.isFinite(Number(value)))) fieldErrors.push(`${field.label} must be a number`);
+      if (!empty && field.type === 'select' && !field.options.includes(value)) fieldErrors.push(`Select a valid ${field.label}`);
+      if (!empty && field.type === 'date' && Number.isNaN(Date.parse(value))) fieldErrors.push(`${field.label} must be a date`);
+      if (!empty && field.key === 'marksPercent' && (Number(value) < 0 || Number(value) > 100)) fieldErrors.push('Marks must be between 0 and 100');
+      if (!empty && field.key === 'familyIncome' && Number(value) < 0) fieldErrors.push('Income cannot be negative');
+    }
+    if (fieldErrors.length) return res.status(400).json({ success: false, message: fieldErrors.join('. '), errors: fieldErrors });
 
     // Check if required documents are uploaded
     const docs = await Document.find({ applicationId: application._id });
@@ -146,20 +162,7 @@ export const submitApplication = async (req, res, next) => {
     }
 
     // Merge context for Rules Engine
-    const context = {
-      name: applicant.name,
-      dob: applicant.profile?.dob,
-      gender: applicant.profile?.gender,
-      category: applicant.profile?.category || 'ST',
-      familyIncome: application.formData?.familyIncome || applicant.profile?.familyIncome,
-      marksPercent: application.formData?.marksPercent || applicant.profile?.education?.marksPercent,
-      educationLevel: application.formData?.educationLevel || applicant.profile?.education?.level,
-      course: application.formData?.course || applicant.profile?.education?.course,
-      university: application.formData?.university || applicant.profile?.education?.university,
-      country: application.formData?.studyCountry || application.formData?.country,
-      disability: applicant.profile?.disability,
-      ...application.formData
-    };
+    const context = buildApplicantContext(applicant.profile || {}, application.formData || {});
 
     // Run Rules Engine
     const evalResult = evaluate(scheme, context);
@@ -168,9 +171,12 @@ export const submitApplication = async (req, res, next) => {
 
     // Determine initial submission state
     const hasUnprocessedDocs = docs.some(d => d.ocrStatus === 'pending');
-    const hasNeedsReviewDocs = docs.some(d => d.verificationStatus === 'needs_review');
+    const hasNeedsReviewDocs = docs.some(d => !['auto_ok', 'approved'].includes(d.verificationStatus) || d.ocrStatus === 'failed');
 
-    if (hasUnprocessedDocs) {
+    const openDeficiencies = await Deficiency.countDocuments({ applicationId: application._id, status: 'open' });
+    if (openDeficiencies > 0) {
+      application.status = 'DEFICIENT';
+    } else if (hasUnprocessedDocs) {
       application.status = 'OCR_PROCESSING';
     } else if (hasNeedsReviewDocs) {
       application.status = 'UNDER_VERIFICATION';
@@ -283,11 +289,13 @@ export const getApplicationById = async (req, res, next) => {
 export const getApplicationTimeline = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const application = await Application.findById(id).select('applicationNo status stageHistory createdAt');
+    const application = await Application.findById(id).select('applicationNo applicantId status stageHistory createdAt');
 
     if (!application) {
       return res.status(404).json({ success: false, message: 'Application not found.' });
     }
+
+    if (req.user.role === 'applicant' && String(application.applicantId) !== String(req.user._id)) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     res.json({
       success: true,
@@ -313,6 +321,9 @@ export const deleteApplication = async (req, res, next) => {
     if (req.user.role === 'applicant' && application.applicantId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
+
+    if (!['applicant', 'admin'].includes(req.user.role)) return res.status(403).json({ success: false, message: 'Only the applicant or an administrator can delete applications.' });
+    if (req.user.role === 'applicant' && application.status !== 'DRAFT') return res.status(409).json({ success: false, message: 'Only draft applications can be deleted.' });
 
     // 1. Delete all documents & disk files for this application
     const documents = await Document.find({ applicationId: id });

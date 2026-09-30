@@ -6,12 +6,21 @@ const HeroCommandCenter = ({ onExploreClick }) => {
     <div className="py-3">
       {/* Top Banner Row */}
       <div className="d-flex align-items-center justify-content-between mb-5">
-        <div className="d-flex align-items-center gap-2">
-          <div className="ks-brand-logo-icon" style={{ width: '28px', height: '28px' }}>
-            <Award size={14} />
-          </div>
+        <div className="d-flex align-items-center gap-2.5">
+          <img
+            src="/images/vidyasetu-logo.jpg"
+            alt="VIDYA SETU"
+            className="rounded-1"
+            style={{
+              height: '36px',
+              width: 'auto',
+              objectFit: 'contain',
+              backgroundColor: '#fff',
+              padding: '2px 4px'
+            }}
+          />
           <span className="fw-bold text-white fs-5" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            MoTA VanSetu
+            VIDYA SETU
           </span>
         </div>
 
@@ -38,7 +47,7 @@ const HeroCommandCenter = ({ onExploreClick }) => {
           </h1>
 
           <p className="ks-display-sub mb-4" style={{ fontSize: '1.15rem', maxWidth: '540px' }}>
-            MoTA VanSetu brings academic, income, document OCR, and DBT disbursement signals together so ministry teams can give clear advice and route support to ST scholars who need it first.
+            VIDYA SETU brings academic, income, document OCR, and DBT disbursement signals together so ministry teams can give clear advice and route support to ST scholars who need it first.
           </p>
 
           <div className="d-flex align-items-center gap-3 flex-wrap">

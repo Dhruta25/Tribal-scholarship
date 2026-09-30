@@ -50,7 +50,7 @@ import Reports from './pages/admin/Reports';
 
 function AppContent() {
   return (
-    <div className="min-vh-100" style={{ background: '#08080a', color: '#ffffff' }}>
+    <div className="min-vh-100 app-root d-flex flex-column">
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />

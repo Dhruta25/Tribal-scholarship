@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads');
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -27,10 +27,10 @@ const fileFilter = (req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
   const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
 
-  if (allowedMimes.includes(file.mimetype) || allowedExts.includes(ext)) {
+  if (allowedMimes.includes(file.mimetype) && allowedExts.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only PDF, JPG, and PNG files up to 5MB are permitted.'));
+    cb(Object.assign(new Error('Invalid file type. Only PDF, JPG, PNG, and WebP files up to 5MB are permitted.'), { status: 400 }));
   }
 };
 

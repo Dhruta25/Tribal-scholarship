@@ -2,76 +2,8 @@ import Scheme from '../models/Scheme.js';
 import User from '../models/User.js';
 import Document from '../models/Document.js';
 import Application from '../models/Application.js';
-import { evaluate } from '../services/rulesEngine.js';
+import { evaluate, buildApplicantContext } from '../services/rulesEngine.js';
 import { recommendSchemesForUser } from '../services/recommendService.js';
-
-const FALLBACK_SCHEMES = [
-  {
-    _id: 'scheme_arg45',
-    code: 'ARG45',
-    name: 'National Fellowship for ST Students (NFST)',
-    level: 'phd',
-    description: 'Central Sector Scheme providing financial fellowship to Scheduled Tribe students pursuing M.Phil and Ph.D. research programmes.',
-    totalSeats: 750,
-    eligibilityRules: [
-      { field: 'category', operator: 'equals', value: 'ST', message: 'Applicant must belong to Scheduled Tribe (ST)' },
-      { field: 'familyIncome', operator: 'lte', value: 800000, message: 'Total annual family income must not exceed Rs 8,00,000' },
-      { field: 'marksPercent', operator: 'gte', value: 55, message: 'Minimum 55% aggregate marks required in Master degree' }
-    ]
-  },
-  {
-    _id: 'scheme_azkmi',
-    code: 'AZKMI',
-    name: 'National Overseas Scholarship for ST Students (NOS)',
-    level: 'masters',
-    description: 'Central Sector Scheme providing financial assistance for Master\'s and Ph.D. in Top 500 QS World Ranking foreign Universities.',
-    totalSeats: 20,
-    eligibilityRules: [
-      { field: 'category', operator: 'equals', value: 'ST', message: 'Applicant must belong to Scheduled Tribe (ST)' },
-      { field: 'familyIncome', operator: 'lte', value: 600000, message: 'Family income must not exceed Rs 6,00,000 per annum' },
-      { field: 'marksPercent', operator: 'gte', value: 55, message: 'Minimum 55% marks required in qualifying degree' }
-    ]
-  },
-  {
-    _id: 'scheme_a023b',
-    code: 'A023B',
-    name: 'Top Class Education for ST Students',
-    level: 'undergraduate',
-    description: 'Central Sector Scheme providing full institute tuition fee reimbursement in 265+ premier institutions (IITs, IIMs, AIIMS, NITs).',
-    totalSeats: 1000,
-    eligibilityRules: [
-      { field: 'category', operator: 'equals', value: 'ST', message: 'Applicant must belong to Scheduled Tribe (ST)' },
-      { field: 'familyIncome', operator: 'lte', value: 600000, message: 'Family income must not exceed Rs 6,00,000 per annum' },
-      { field: 'marksPercent', operator: 'gte', value: 55, message: 'Minimum 55% aggregate marks required' }
-    ]
-  },
-  {
-    _id: 'scheme_bvobc',
-    code: 'BVOBC',
-    name: 'Post-Matric Scholarship Scheme for ST Students',
-    level: 'higher_secondary',
-    description: 'Centrally Sponsored Scheme delivered via Direct Benefit Transfer (DBT) for ST students in Classes 11th, 12th, ITI, Diploma, Undergraduate.',
-    totalSeats: 50000,
-    eligibilityRules: [
-      { field: 'category', operator: 'equals', value: 'ST', message: 'Applicant must belong to Scheduled Tribe (ST)' },
-      { field: 'familyIncome', operator: 'lte', value: 250000, message: 'Family income must not exceed Rs 2,50,000 per annum' },
-      { field: 'marksPercent', operator: 'gte', value: 45, message: 'Must have passed previous annual examination' }
-    ]
-  },
-  {
-    _id: 'scheme_bpvgk',
-    code: 'BPVGK',
-    name: 'Pre-Matric Scholarship Scheme for ST Students (Class IX & X)',
-    level: '10th',
-    description: 'Centrally Sponsored Scheme to support ST students studying in Classes IX and X in Government or recognized schools.',
-    totalSeats: 100000,
-    eligibilityRules: [
-      { field: 'category', operator: 'equals', value: 'ST', message: 'Student must belong to Scheduled Tribe (ST)' },
-      { field: 'familyIncome', operator: 'lte', value: 250000, message: 'Annual family income must not exceed Rs 2,50,000' },
-      { field: 'marksPercent', operator: 'gte', value: 40, message: 'Must have passed previous annual school exam' }
-    ]
-  }
-];
 
 /**
  * Public eligibility check endpoint (no login required)
@@ -79,51 +11,37 @@ const FALLBACK_SCHEMES = [
  */
 export const checkEligibility = async (req, res, next) => {
   try {
-    const { schemeId, schemeCode, category = 'ST', educationLevel, course, marksPercent = 0, familyIncome = 0, age = 22, country } = req.body;
-
-    let scheme = null;
-    try {
-      if (schemeId) {
-        scheme = await Scheme.findById(schemeId);
-      } else if (schemeCode) {
-        scheme = await Scheme.findOne({ code: schemeCode.toUpperCase(), isActive: true });
-      } else {
-        scheme = await Scheme.findOne({ isActive: true });
-      }
-    } catch (e) {
-      scheme = null;
+    const { schemeId, schemeCode } = req.body;
+    const input = req.body.applicantData || req.body;
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return res.status(400).json({ success: false, message: 'Applicant data must be an object.' });
+    if (!schemeId && !schemeCode) return res.status(400).json({ success: false, message: 'Select a scholarship scheme.' });
+    if (schemeCode && typeof schemeCode !== 'string') return res.status(400).json({ success: false, message: 'Invalid scheme code.' });
+    for (const field of ['marksPercent', 'familyIncome', 'age']) {
+      const value = input[field];
+      if (value !== undefined && value !== null && value !== '' && (!['string', 'number'].includes(typeof value) || !Number.isFinite(Number(value)) || Number(value) < 0 || (field === 'marksPercent' && Number(value) > 100) || (field === 'age' && Number(value) > 120))) return res.status(400).json({ success: false, message: `Invalid ${field}.` });
     }
 
-    if (!scheme) {
-      const searchCode = (schemeCode || '').toUpperCase();
-      scheme = FALLBACK_SCHEMES.find(s => s.code === searchCode || s._id === schemeId) || FALLBACK_SCHEMES[0];
+    let scheme;
+    if (schemeId) {
+      scheme = await Scheme.findById(schemeId);
+    } else if (schemeCode) {
+      scheme = await Scheme.findOne({ code: ({ NFST: 'ARG45', NOS: 'AZKMI' }[schemeCode.toUpperCase()] || schemeCode.toUpperCase()), isActive: true });
+    } else {
+      scheme = await Scheme.findOne({ isActive: true });
     }
 
-    const context = {
-      category,
-      educationLevel,
-      course,
-      marksPercent: Number(marksPercent),
-      familyIncome: Number(familyIncome),
-      age: Number(age),
-      country
-    };
+    if (!scheme || !scheme.isActive) {
+      return res.status(404).json({ success: false, message: 'Scheme not found.' });
+    }
+
+    const context = buildApplicantContext(input.profile || {}, input);
 
     const evalResult = evaluate(scheme, context);
 
     // If ineligible, check and suggest other schemes that this profile DOES satisfy
     let alternativeSchemes = [];
     if (!evalResult.passed) {
-      let allSchemes = [];
-      try {
-        allSchemes = await Scheme.find({ _id: { $ne: scheme._id }, isActive: true });
-      } catch (e) {
-        allSchemes = [];
-      }
-      if (!allSchemes || allSchemes.length === 0) {
-        allSchemes = FALLBACK_SCHEMES.filter(s => s.code !== scheme.code);
-      }
-
+      const allSchemes = await Scheme.find({ _id: { $ne: scheme._id }, isActive: true });
       for (const other of allSchemes) {
         const otherEval = evaluate(other, context);
         if (otherEval.passed) {
