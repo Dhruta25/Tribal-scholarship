@@ -1,15 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Spinner } from 'react-bootstrap';
+import { Row, Col, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient from '../../api/axiosClient';
+import AppShell from '../../components/AppShell';
 import {
   Award, Globe, ShieldCheck, Sparkles, CheckCircle2, ArrowRight,
-  FileText, Cpu, Clock, Check, Users, ChevronLeft, ChevronRight,
-  GraduationCap, Landmark, BookOpen, Layers, CheckCircle, ExternalLink,
-  ChevronDown, ChevronUp, ArrowDownRight, Compass, Shield
+  Cpu, ChevronLeft, ChevronRight, GraduationCap, Landmark
 } from 'lucide-react';
+
+const FALLBACK_SCHEMES = [
+  {
+    _id: 'scheme_bpvgk',
+    code: 'BPVGK',
+    name: 'Pre-Matric Scholarship Scheme for ST Students (Class IX & X)',
+    description: 'Centrally Sponsored Scheme to support ST students studying in Classes IX and X in Government or recognized schools to minimize transition dropouts.',
+    level: '10th',
+    eligibilityRules: { educationLevel: 'Class 9th & 10th', incomeLimitMax: 250000 }
+  },
+  {
+    _id: 'scheme_bvobc',
+    code: 'BVOBC',
+    name: 'Post-Matric Scholarship Scheme for ST Students',
+    description: 'Centrally Sponsored Scheme delivered via Direct Benefit Transfer (DBT) to provide financial assistance to Scheduled Tribe students pursuing post-secondary courses.',
+    level: '12th',
+    eligibilityRules: { educationLevel: 'Class 11th, 12th & Diploma', incomeLimitMax: 250000 }
+  },
+  {
+    _id: 'scheme_a023b',
+    code: 'A023B',
+    name: 'Top Class Education for ST Students',
+    description: 'Central Sector Scheme providing full institute tuition fee reimbursement, living allowance (Rs. 3,000/month), and a one-time computer grant for ST scholars in premier institutes.',
+    level: 'bachelors',
+    eligibilityRules: { educationLevel: 'Undergraduate / Degree', incomeLimitMax: 600000 }
+  },
+  {
+    _id: 'scheme_azkmi',
+    code: 'AZKMI',
+    name: 'National Overseas Scholarship for ST Students (NOS)',
+    description: 'Central Sector Scheme providing financial assistance to selected Scheduled Tribe students for pursuing Master\'s, Ph.D., and Post-Doctoral research abroad.',
+    level: 'masters',
+    eligibilityRules: { educationLevel: 'Master\'s / Study Abroad', incomeLimitMax: 600000 }
+  },
+  {
+    _id: 'scheme_arg45',
+    code: 'ARG45',
+    name: 'National Fellowship for ST Students (NFST)',
+    description: 'Central Sector Scheme providing financial fellowship to Scheduled Tribe students pursuing M.Phil and Ph.D. research programmes in Indian Universities, IITs, and NITs.',
+    level: 'phd',
+    eligibilityRules: { educationLevel: 'Ph.D. / M.Phil Research', incomeLimitMax: 800000 }
+  }
+];
 
 const Home = () => {
   const { t, lang } = useLanguage();
@@ -40,8 +82,7 @@ const Home = () => {
       ],
       preCheckCode: 'ARG45',
       image: '/images/hero/slide_nfst.jpg',
-      alt: 'ST student engaged in research and digital documentation on a laptop at Kalinga Institute of Social Sciences',
-      credit: 'Photo: Subhashish Panigrahi / Wikimedia Commons, CC BY-SA 3.0',
+      alt: 'ST student engaged in research',
       floatingBadges: [
         { position: 'top-left', text: '🎓 750 Annual Fellowships', color: '#10b981' },
         { position: 'bottom-right', text: '🔬 Indian Universities & IITs', color: '#38bdf8' }
@@ -63,8 +104,7 @@ const Home = () => {
       ],
       preCheckCode: 'AZKMI',
       image: '/images/hero/slide_nos.jpg',
-      alt: 'Graduates tossing academic caps in celebration at convocation',
-      credit: 'Photo: AKS.9955 / Wikimedia Commons, CC BY-SA 4.0',
+      alt: 'Graduates tossing academic caps',
       floatingBadges: [
         { position: 'top-left', text: '✈️ Oxford, MIT & Harvard', color: '#f59e0b' },
         { position: 'bottom-right', text: '🌍 20 Overseas Slots (17 ST + 3 PVTG)', color: '#38bdf8' }
@@ -86,8 +126,7 @@ const Home = () => {
       ],
       preCheckCode: 'A023B',
       image: '/images/hero/slide_topclass.jpg',
-      alt: 'Students studying with books and laptops in the library reading hall at IIT (BHU) Varanasi',
-      credit: 'Photo: Deepak Singhanwal / Wikimedia Commons, CC BY-SA 4.0',
+      alt: 'Students studying in library',
       floatingBadges: [
         { position: 'top-left', text: '💻 ₹45,000 Hardware Grant', color: '#6366f1' },
         { position: 'bottom-right', text: '🏛️ IIT, IIM, AIIMS, NIT', color: '#10b981' }
@@ -109,8 +148,7 @@ const Home = () => {
       ],
       preCheckCode: 'BVOBC',
       image: '/images/hero/slide_matric.jpg',
-      alt: 'Tribal school students with notebooks and badges participating in an educational reading event',
-      credit: 'Photo: Ministry of Education / PIB, GODL-India',
+      alt: 'Tribal school students',
       floatingBadges: [
         { position: 'top-left', text: '📱 100% Cash DBT to Bank', color: '#10b981' },
         { position: 'bottom-right', text: '👨‍👩‍👧 Class 9 to 12 & Degree', color: '#eab308' }
@@ -127,13 +165,12 @@ const Home = () => {
       subtitle: 'OCR reads each certificate in about 2 seconds and flags mismatches. Rules decide eligibility, and a human officer makes every final decision.',
       stats: [
         { label: 'Document reading', value: '~2 sec / document' },
-        { label: 'Wrong uploads approved', value: '0 of 44 in our test' },
+        { label: 'Wrong uploads approved', value: '0 of 44 in test' },
         { label: 'Final decision', value: 'Always a human' }
       ],
       preCheckCode: 'ARG45',
       image: '/images/hero/slide_ai_model.jpg',
-      alt: 'Tribal students and faculty working on computer workstations during a digital workshop at KISS Bhubaneswar',
-      credit: 'Photo: Subhashish Panigrahi / Wikimedia Commons, CC BY-SA 3.0',
+      alt: 'Tribal students working on computer workstations',
       floatingBadges: [
         { position: 'top-left', text: '🧠 AI flags, humans decide', color: '#a855f7' },
         { position: 'bottom-right', text: '📝 Every decision has a reason', color: '#10b981' }
@@ -142,16 +179,17 @@ const Home = () => {
     }
   ];
 
-  // Fetch schemes from database
   useEffect(() => {
     const fetchSchemes = async () => {
       try {
         const res = await axiosClient.get('/schemes?active=true');
         if (res.data.success && res.data.schemes?.length > 0) {
           setSchemes(res.data.schemes);
+        } else {
+          setSchemes(FALLBACK_SCHEMES);
         }
       } catch (err) {
-        console.error('Failed to load schemes:', err);
+        setSchemes(FALLBACK_SCHEMES);
       } finally {
         setLoadingSchemes(false);
       }
@@ -159,7 +197,6 @@ const Home = () => {
     fetchSchemes();
   }, []);
 
-  // Auto-rotating 5-Second Carousel Timer
   useEffect(() => {
     if (isPaused) return;
     const interval = setInterval(() => {
@@ -172,503 +209,229 @@ const Home = () => {
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
 
   const activeSlide = heroSlides[currentSlide];
-  const IconComponent = activeSlide.icon;
-
-  const scrollToSchemes = (e) => {
-    e.preventDefault();
-    const elem = document.getElementById('schemes-section');
-    if (elem) {
-      elem.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
-    <div className="home-page">
-      {/* FULL VIEWPORT 5-SECOND HERO DASHBOARD (Inspired by myScheme layout) */}
-      <section
-        className="hero-full-viewport text-white"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        {/* Animated 5-Second Progress Bar at Top */}
-        <div className="carousel-progress-bar">
-          <div
-            key={currentSlide}
-            className="carousel-progress-fill"
-            style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
-          />
-        </div>
+    <AppShell activeTab="overview">
+      <div className="home-page text-white">
+        {/* TOP HERO SECTION: 5-SECOND ROTATING CAROUSEL IN SLEEK BLACK & WHITE OBSIDIAN CARD */}
+        <section
+          className="p-4 p-md-5 ks-card text-white mb-5 position-relative"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div className="carousel-progress-bar mb-4">
+            <div
+              key={currentSlide}
+              className="carousel-progress-fill"
+              style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
+            />
+          </div>
 
-        {/* Decorative Dotted Grid in Background */}
-        <div className="decorative-dot-grid top-right" />
-        <div className="decorative-dot-grid bottom-left" />
-
-        {/* Main Hero Content Area */}
-        <Container className="my-auto py-4 position-relative z-1">
           <Row className="align-items-center gy-4">
-            {/* Left Column: Scheme / AI Model Information */}
-            <Col lg={7} key={activeSlide.id} className="slide-fade-enter">
-              <div className="d-flex align-items-center gap-2 mb-3">
-                <Badge
-                  bg={activeSlide.badgeVariant}
-                  text="dark"
-                  className="px-3 py-1.5 fw-bold text-uppercase shadow-sm"
-                  style={{ letterSpacing: '0.6px', fontSize: '0.82rem' }}
-                >
-                  {activeSlide.tag}
-                </Badge>
-                {isPaused && (
-                  <Badge bg="secondary" className="small">⏸ Paused on hover</Badge>
-                )}
-              </div>
-
-              <h1 className="display-5 fw-extrabold text-white mb-2" style={{ lineHeight: '1.2', fontWeight: 800 }}>
-                {activeSlide.title}
-              </h1>
-
-              <h5 className="text-warning fw-semibold mb-3 opacity-90" style={{ fontSize: '1.15rem' }}>
-                {activeSlide.tagline}
-              </h5>
-
-              <p className="lead text-white-50 mb-4" style={{ maxWidth: '640px', lineHeight: '1.6', fontSize: '1.05rem' }}>
-                {activeSlide.subtitle}
-              </p>
-
-              {/* Dynamic Slide Highlight Stats */}
-              <div className="row g-2.5 mb-4" style={{ maxWidth: '580px' }}>
-                {activeSlide.stats.map((s, idx) => (
-                  <div className="col-4" key={idx}>
-                    <div className="p-2.5 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-15 text-center shadow-sm backdrop-blur">
-                      <div className="text-warning fw-bold fs-6">{s.value}</div>
-                      <div className="text-white-50 small" style={{ fontSize: '0.74rem' }}>{s.label}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="d-flex flex-wrap gap-3 align-items-center">
-                <Link
-                  to={`/eligibility?scheme=${activeSlide.preCheckCode}`}
-                  className="btn btn-warning btn-lg fw-bold px-4 py-2.5 shadow text-dark d-inline-flex align-items-center gap-2"
-                >
-                  <Sparkles size={20} /> Pre-Check Eligibility
-                </Link>
-
-                <Link
-                  to="/schemes"
-                  className="btn btn-outline-light btn-lg fw-semibold px-4 py-2.5 d-inline-flex align-items-center gap-2"
-                >
-                  Explore All 5 Schemes <ArrowRight size={18} />
-                </Link>
-
-                {isAdmin && (
-                  <Link
-                    to="/ml-hub"
-                    className="btn btn-outline-info btn-lg fw-semibold px-3 py-2.5 d-inline-flex align-items-center gap-2"
-                  >
-                    <Cpu size={18} /> AI / ML Sandbox
-                  </Link>
-                )}
-              </div>
-            </Col>
-
-            {/* Right Column: 3D Dazzling Interactive Visual Artwork */}
-            <Col lg={5}>
-              <div className="hero-3d-frame-wrapper">
-                {/* Floating 3D Badges */}
-                {activeSlide.floatingBadges.map((badge, bIdx) => (
-                  <div
-                    key={bIdx}
-                    className={`floating-3d-badge ${badge.position}`}
-                    style={{ borderLeft: `4px solid ${badge.color}` }}
-                  >
-                    <span>{badge.text}</span>
-                  </div>
-                ))}
-
-                {/* 3D Image Card */}
-                <div className="hero-3d-image-card">
-                  <img
-                    src={activeSlide.image}
-                    alt={activeSlide.alt || activeSlide.title}
-                    loading="eager"
-                  />
-                  {/* Subtle Gradient Overlay */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(180deg, transparent 65%, rgba(15, 23, 42, 0.7) 100%)',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                  {/* Photo Credit Overlay */}
-                  {activeSlide.credit && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '12px',
-                        fontSize: '0.68rem',
-                        color: 'rgba(255, 255, 255, 0.85)',
-                        background: 'rgba(15, 23, 42, 0.65)',
-                        backdropFilter: 'blur(4px)',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        pointerEvents: 'none',
-                        maxWidth: '70%',
-                        textAlign: 'right',
-                        zIndex: 2,
-                        letterSpacing: '0.01em'
-                      }}
-                    >
-                      {activeSlide.credit}
-                    </div>
-                  )}
+            <Col lg={7}>
+              <div key={activeSlide.id} className="slide-fade-enter">
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <span className="ks-module-tag">{activeSlide.tag}</span>
                 </div>
-              </div>
 
-              {/* Slide Selector & Navigation Controls */}
-              <div className="d-flex justify-content-between align-items-center mt-4 px-2">
-                {/* Dotted Navigation */}
-                <div className="d-flex align-items-center gap-2">
-                  {heroSlides.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentSlide(idx)}
-                      className={`btn p-0 border-0 ${currentSlide === idx ? 'bg-warning' : 'bg-white bg-opacity-35'}`}
-                      style={{
-                        width: currentSlide === idx ? '28px' : '10px',
-                        height: '10px',
-                        borderRadius: '5px',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
+                <h1 className="ks-display-title mb-2" style={{ fontSize: '2.8rem', lineHeight: '1.1' }}>
+                  {activeSlide.title}
+                </h1>
+                <h5 className="text-warning mb-3 fw-semibold" style={{ fontSize: '1.2rem' }}>{activeSlide.tagline}</h5>
+                <p className="ks-display-sub mb-4" style={{ fontSize: '1.02rem', lineHeight: '1.6' }}>
+                  {activeSlide.subtitle}
+                </p>
+
+                <div className="row g-3 mb-4">
+                  {activeSlide.stats.map((st, idx) => (
+                    <div key={idx} className="col-4">
+                      <div className="ks-card-sub text-center p-3">
+                        <div className="fw-bold text-white fs-5">{st.value}</div>
+                        <div className="text-muted small" style={{ fontSize: '0.75rem' }}>{st.label}</div>
+                      </div>
+                    </div>
                   ))}
-                  <span className="small text-white-50 ms-2" style={{ fontSize: '0.8rem' }}>
-                    0{currentSlide + 1} / 0{heroSlides.length}
-                  </span>
                 </div>
 
-                {/* Next / Previous Arrow Chevrons */}
-                <div className="d-flex gap-1.5">
-                  <button
-                    onClick={prevSlide}
-                    className="btn btn-sm btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center"
-                    style={{ width: '36px', height: '36px' }}
-                    aria-label="Previous slide"
+                <div className="d-flex align-items-center gap-3 flex-wrap">
+                  <Link
+                    to={`/eligibility?scheme=${activeSlide.preCheckCode}`}
+                    className="ks-btn-white py-3 px-4"
                   >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button
-                    onClick={nextSlide}
-                    className="btn btn-sm btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center"
-                    style={{ width: '36px', height: '36px' }}
-                    aria-label="Next slide"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
+                    <Sparkles size={18} /> Pre-Check Eligibility
+                  </Link>
+
+                  <Link to="/schemes" className="ks-btn-dark py-3 px-4">
+                    Explore All Schemes <ArrowRight size={16} />
+                  </Link>
+
+                  <div className="d-flex align-items-center gap-2 ms-auto">
+                    <button onClick={prevSlide} className="ks-btn-dark py-2 px-3" title="Previous Slide">
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="small text-muted font-monospace">{currentSlide + 1} / {heroSlides.length}</span>
+                    <button onClick={nextSlide} className="ks-btn-dark py-2 px-3" title="Next Slide">
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
                 </div>
+              </div>
+            </Col>
+
+            <Col lg={5} className="text-center">
+              <div className="hero-3d-frame-wrapper mx-auto">
+                <div className="hero-3d-image-card">
+                  <img src={activeSlide.image} alt={activeSlide.alt} />
+                </div>
+                {activeSlide.floatingBadges.map((bg, idx) => (
+                  <div key={idx} className={`floating-3d-badge ${bg.position}`}>
+                    <span style={{ color: bg.color }}>{bg.text}</span>
+                  </div>
+                ))}
               </div>
             </Col>
           </Row>
-        </Container>
+        </section>
 
-        {/* BOTTOM HASHTAG & "FIND SCHEMES FOR YOU" SCROLL BAR (myScheme pattern) */}
-        <div className="hero-bottom-tag-strip">
-          <div className="small text-white-50 text-uppercase fw-bold mb-2.5" style={{ letterSpacing: '2.5px', fontSize: '0.82rem' }}>
-            #GOVERNMENTSCHEMES &nbsp;•&nbsp; #SCHEMESFORYOU &nbsp;•&nbsp; #TRIBALWELFARE &nbsp;•&nbsp; #DIGITALINDIA
+        {/* LIVE DATABASE SCHEMES GRID */}
+        <section id="schemes-section" className="my-5">
+          <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+              <div className="ks-module-tag">MINISTRY OF TRIBAL AFFAIRS OFFICIAL SCHEMES</div>
+              <h2 className="ks-display-title" style={{ fontSize: '2.2rem' }}>Official Higher Education &amp; Fellowship Schemes</h2>
+              <p className="text-muted small">Extracted from official portals (tribal.nic.in &amp; dbttribal.gov.in). Transparent criteria and Direct Benefit Transfer (DBT) delivery.</p>
+            </div>
+            <Link to="/schemes" className="ks-btn-dark">
+              View All Schemes <ArrowRight size={16} />
+            </Link>
           </div>
-          <a
-            href="#schemes-section"
-            onClick={scrollToSchemes}
-            className="find-schemes-pill-btn shadow-lg"
-          >
-            Find Schemes For You <ChevronDown size={20} className="animate-bounce" />
-          </a>
-        </div>
-      </section>
 
-      {/* LIVE REAL-TIME METRICS COUNTER STRIP (Generous Padding & Cards) */}
-      <div className="stats-counter-strip">
-        <Container>
-          <Row className="text-center g-3 g-lg-4 justify-content-center">
-            <Col lg={2} md={4} sm={6} xs={6}>
-              <div className="stat-metric-card">
-                <div className="stat-metric-number text-primary">5</div>
-                <div className="stat-metric-label">Active MoTA Schemes</div>
-              </div>
-            </Col>
-            <Col lg={2} md={4} sm={6} xs={6}>
-              <div className="stat-metric-card">
-                <div className="stat-metric-number text-success">750</div>
-                <div className="stat-metric-label">NFST Fellowships / yr</div>
-              </div>
-            </Col>
-            <Col lg={2} md={4} sm={6} xs={6}>
-              <div className="stat-metric-card">
-                <div className="stat-metric-number text-info">20</div>
-                <div className="stat-metric-label">NOS Overseas Seats</div>
-              </div>
-            </Col>
-            <Col lg={2} md={4} sm={6} xs={6}>
-              <div className="stat-metric-card">
-                <div className="stat-metric-number text-warning">265+</div>
-                <div className="stat-metric-label">Premier Institutes</div>
-              </div>
-            </Col>
-            <Col lg={2} md={4} sm={6} xs={6}>
-              <div className="stat-metric-card">
-                <div className="stat-metric-number text-danger">₹32K/mo</div>
-                <div className="stat-metric-label">JRF Research Stipend</div>
-              </div>
-            </Col>
-            <Col lg={2} md={4} sm={6} xs={6}>
-              <div className="stat-metric-card">
-                <div className="stat-metric-number text-dark">100%</div>
-                <div className="stat-metric-label">DBT / Audit Verified</div>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-
-      {/* ALL 5 OFFICIAL GOVERNMENT SCHEMES SHOWCASE */}
-      <Container id="schemes-section" className="py-5">
-        <div className="text-center mb-5">
-          <Badge bg="primary" className="px-3 py-1.5 text-uppercase fw-bold mb-2">
-            Ministry of Tribal Affairs Official Schemes
-          </Badge>
-          <h2 className="fw-bold text-dark">Official Higher Education &amp; Fellowship Schemes</h2>
-          <p className="text-muted" style={{ maxWidth: '680px', margin: '0 auto' }}>
-            Extracted from official portals (<code>tribal.nic.in</code> &amp; <code>dbttribal.gov.in</code>). Transparent criteria, objective evaluation, and Direct Benefit Transfer (DBT) delivery.
-          </p>
-        </div>
-
-        {loadingSchemes ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="primary" />
-            <p className="text-muted small mt-2">Loading official schemes...</p>
-          </div>
-        ) : (
-          <>
-            <Row className="gy-4">
-              {(showAllSchemes ? schemes : schemes.slice(0, 3)).map((scheme) => (
-                <Col lg={4} md={6} key={scheme._id || scheme.code} className="slide-fade-enter">
-                  <Card className="gov-card h-100 border p-3 shadow-sm d-flex flex-column">
-                    <Card.Body className="d-flex flex-column p-2">
-                      <div className="d-flex justify-content-between align-items-start mb-2">
-                        <Badge bg="primary" className="px-2.5 py-1 text-uppercase fw-bold">
-                          {scheme.code}
-                        </Badge>
-                        <Badge bg="success" className="px-2 py-1">
-                          {scheme.schemeType || 'Central Scheme'}
-                        </Badge>
+          {loadingSchemes ? (
+            <div className="text-center py-5">
+              <Spinner animation="border" variant="light" />
+            </div>
+          ) : (
+            <Row className="g-4">
+              {(showAllSchemes ? schemes : schemes.slice(0, 3)).map((s) => (
+                <Col lg={4} md={6} key={s._id}>
+                  <div className="ks-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <div className="d-flex align-items-center justify-content-between mb-3">
+                        <span className="ks-module-tag">{s.code}</span>
+                        <span className="badge bg-warning bg-opacity-25 text-warning px-2.5 py-1">Central Sector Scheme</span>
                       </div>
-
-                      <h5 className="fw-bold text-dark mb-2" style={{ minHeight: '48px' }}>
-                        {scheme.name}
-                      </h5>
-
-                      <p className="text-secondary small flex-grow-1 mb-3" style={{ lineHeight: '1.5', minHeight: '65px' }}>
-                        {scheme.description?.length > 130
-                          ? `${scheme.description.substring(0, 130)}...`
-                          : scheme.description}
+                      <h4 className="fw-bold text-white mb-2">{s.name}</h4>
+                      <p className="text-secondary small mb-3" style={{ lineHeight: '1.5' }}>
+                        {s.description}
                       </p>
+                    </div>
 
-                      <div className="bg-light p-2.5 rounded mb-3 small">
-                        <div className="d-flex justify-content-between mb-1">
-                          <span className="text-muted">Target Level:</span>
-                          <strong className="text-capitalize text-dark">{scheme.level}</strong>
+                    <div>
+                      <div className="ks-card-sub mb-3">
+                        <div className="d-flex justify-content-between small text-muted mb-1.5">
+                          <span>Target Level:</span>
+                          <strong className="text-white">{s.eligibilityRules?.educationLevel || 'ST Students'}</strong>
                         </div>
-                        <div className="d-flex justify-content-between mb-1">
-                          <span className="text-muted">Benefit Mode:</span>
-                          <strong className="text-success">{scheme.benefitType || 'In Cash (DBT)'}</strong>
+                        <div className="d-flex justify-content-between small text-muted mb-1.5">
+                          <span>Benefit Mode:</span>
+                          <strong className="text-success">In Cash (DBT Allowance &amp; Stipend)</strong>
                         </div>
-                        <div className="d-flex justify-content-between">
-                          <span className="text-muted">Annual Grant / Seats:</span>
-                          <strong className="text-primary">{scheme.totalSeats ? `${scheme.totalSeats} Seats` : 'Entitlement'}</strong>
+                        <div className="d-flex justify-content-between small text-muted">
+                          <span>Max Income Limit:</span>
+                          <strong className="text-white">≤ ₹{(s.eligibilityRules?.incomeLimitMax / 100000).toFixed(2)} Lakhs</strong>
                         </div>
                       </div>
 
-                      <div className="d-flex gap-2 mt-auto">
-                        <Link
-                          to={`/eligibility?scheme=${scheme.code}`}
-                          className="btn btn-outline-primary btn-sm flex-fill fw-semibold"
-                        >
+                      <div className="d-flex align-items-center gap-2">
+                        <Link to={`/eligibility?scheme=${s.code}`} className="ks-btn-white w-50 justify-content-center py-2">
                           Pre-Check
                         </Link>
-                        <Link
-                          to={`/schemes/${scheme._id}`}
-                          className="btn btn-gov-primary btn-sm flex-fill fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
-                        >
-                          Details <ArrowRight size={14} />
+                        <Link to={`/schemes/${s._id}`} className="ks-btn-dark w-50 justify-content-center py-2">
+                          Details &rarr;
                         </Link>
                       </div>
-                    </Card.Body>
-                  </Card>
+                    </div>
+                  </div>
                 </Col>
               ))}
             </Row>
+          )}
 
-            {schemes.length > 3 && (
-              <div className="see-more-schemes-container">
-                <button
-                  type="button"
-                  onClick={() => setShowAllSchemes(prev => !prev)}
-                  className="see-more-schemes-btn"
-                >
-                  {showAllSchemes ? (
-                    <>
-                      Show Fewer Schemes <ChevronUp size={18} className="arrow-icon" />
-                    </>
-                  ) : (
-                    <>
-                      See More Schemes ({schemes.length - 3} More) <ArrowRight size={18} className="arrow-icon" />
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </Container>
+          {schemes.length > 3 && (
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setShowAllSchemes(prev => !prev)}
+                className="ks-btn-dark"
+              >
+                {showAllSchemes ? 'Show Fewer Schemes' : `See More Schemes (${schemes.length - 3} More)`}
+              </button>
+            </div>
+          )}
+        </section>
 
-      {/* 4-STEP EASY APPLICATION PROCESS ("HOW IT WORKS") */}
-      <div className="bg-light py-5 border-top border-bottom">
-        <Container>
+        {/* 4-STEP EASY WORKFLOW */}
+        <section className="my-5 py-4 border-top border-secondary border-opacity-25">
           <div className="text-center mb-5">
-            <Badge bg="warning" text="dark" className="px-3 py-1 text-uppercase fw-bold mb-2">
-              Simple 4-Step Workflow
-            </Badge>
-            <h2 className="fw-bold text-dark">How to Avail MoTA Scholarships &amp; Fellowships</h2>
-            <p className="text-muted" style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <div className="ks-module-tag">SIMPLE 4-STEP WORKFLOW</div>
+            <h2 className="ks-display-title mb-2" style={{ fontSize: '2.2rem' }}>How to Avail MoTA Scholarships &amp; Fellowships</h2>
+            <p className="ks-display-sub mx-auto" style={{ maxWidth: '600px' }}>
               Transparent, automated, and hassle-free journey from eligibility pre-check to direct bank disbursement.
             </p>
           </div>
 
-          <Row className="gy-4">
+          <Row className="g-4">
             <Col md={3} sm={6}>
-              <Card className="gov-card p-3 h-100 border text-center">
-                <div
-                  className="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mx-auto mb-3 shadow"
-                  style={{ width: '56px', height: '56px' }}
-                >
+              <div className="ks-card text-center h-100">
+                <div className="rounded-circle bg-white text-dark d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '52px', height: '52px' }}>
                   <Sparkles size={24} />
                 </div>
-                <h5 className="fw-bold fs-6 mb-2">1. Eligibility Pre-Check</h5>
-                <p className="small text-secondary mb-0">
-                  Instantly verify criteria against official MoTA rules with green ticks without needing to register or login.
+                <h5 className="fw-bold text-white fs-6 mb-2">1. Eligibility Pre-Check</h5>
+                <p className="small text-muted mb-0">
+                  Instantly verify criteria against official MoTA rules with green ticks without needing to register.
                 </p>
-              </Card>
+              </div>
             </Col>
 
             <Col md={3} sm={6}>
-              <Card className="gov-card p-3 h-100 border text-center">
-                <div
-                  className="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center mx-auto mb-3 shadow"
-                  style={{ width: '56px', height: '56px' }}
-                >
+              <div className="ks-card text-center h-100">
+                <div className="rounded-circle bg-white text-dark d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '52px', height: '52px' }}>
                   <Cpu size={24} />
                 </div>
-                <h5 className="fw-bold fs-6 mb-2">2. Offline AI OCR Scan</h5>
-                <p className="small text-secondary mb-0">
-                  Upload certificates and marksheets. Local offline OCR extracts data, flags mismatches and repeated files, and validates in seconds.
+                <h5 className="fw-bold text-white fs-6 mb-2">2. Offline AI OCR Scan</h5>
+                <p className="small text-muted mb-0">
+                  Upload certificates. Local offline OCR extracts data, flags mismatches, and validates in seconds.
                 </p>
-              </Card>
+              </div>
             </Col>
 
             <Col md={3} sm={6}>
-              <Card className="gov-card p-3 h-100 border text-center">
-                <div
-                  className="rounded-circle bg-warning text-dark d-inline-flex align-items-center justify-content-center mx-auto mb-3 shadow"
-                  style={{ width: '56px', height: '56px' }}
-                >
+              <div className="ks-card text-center h-100">
+                <div className="rounded-circle bg-white text-dark d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '52px', height: '52px' }}>
                   <ShieldCheck size={24} />
                 </div>
-                <h5 className="fw-bold fs-6 mb-2">3. Transparent Scrutiny</h5>
-                <p className="small text-secondary mb-0">
-                  AI flags discrepancies for human verifiers. Merit scoring allocates 750 NFST and 20 NOS slots (17 ST + 3 PVTG) with gender quotas.
+                <h5 className="fw-bold text-white fs-6 mb-2">3. Transparent Scrutiny</h5>
+                <p className="small text-muted mb-0">
+                  AI flags discrepancies for human verifiers. Merit scoring allocates 750 NFST and 20 NOS slots with gender quotas.
                 </p>
-              </Card>
+              </div>
             </Col>
 
             <Col md={3} sm={6}>
-              <Card className="gov-card p-3 h-100 border text-center">
-                <div
-                  className="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mx-auto mb-3 shadow"
-                  style={{ width: '56px', height: '56px' }}
-                >
+              <div className="ks-card text-center h-100">
+                <div className="rounded-circle bg-white text-dark d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '52px', height: '52px' }}>
                   <Award size={24} />
                 </div>
-                <h5 className="fw-bold fs-6 mb-2">4. Direct DBT Grant</h5>
-                <p className="small text-secondary mb-0">
-                  Monthly research stipends and tuition grants disbursed directly to verified Aadhaar-seeded bank accounts via DBT.
+                <h5 className="fw-bold text-white fs-6 mb-2">4. Direct DBT Grant</h5>
+                <p className="small text-muted mb-0">
+                  Monthly research stipends and tuition grants disbursed directly to verified Aadhaar-seeded bank accounts.
                 </p>
-              </Card>
+              </div>
             </Col>
           </Row>
-        </Container>
+        </section>
       </div>
-
-      {/* ABOUT MINISTRY OF TRIBAL AFFAIRS SECTION */}
-      <Container className="py-5">
-        <Row className="align-items-center gy-4">
-          <Col lg={7}>
-            <Badge bg="primary" className="px-3 py-1 text-uppercase fw-bold mb-2">About the Ministry</Badge>
-            <h2 className="fw-bold text-dark mb-3">Empowering Tribal Youth Across India</h2>
-            <p className="text-secondary" style={{ lineHeight: '1.7' }}>
-              The <strong>Ministry of Tribal Affairs (MoTA)</strong> was constituted in 1999 with the objective of providing a focused approach towards the integrated socio-economic development and educational empowerment of Scheduled Tribes (STs) in India.
-            </p>
-            <p className="text-secondary" style={{ lineHeight: '1.7' }}>
-              Under the visionary Smart India Hackathon initiative (PS 26239), this AI-Enabled Scholarship &amp; Fellowship Management System modernizes scholarship delivery with offline OCR, automated eligibility simulation, machine learning diagnostics, and 100% human-in-the-loop transparent decision audit trails.
-            </p>
-
-            <div className="d-flex flex-wrap gap-3 mt-4">
-              <Link to="/schemes" className="btn btn-gov-primary fw-semibold px-4 py-2">
-                Browse All 5 Schemes
-              </Link>
-              {isAdmin && (
-                <Link to="/ml-hub" className="btn btn-outline-dark fw-semibold px-4 py-2">
-                  Explore Machine Learning Intelligence
-                </Link>
-              )}
-            </div>
-          </Col>
-
-          <Col lg={5}>
-            <Card className="gov-card p-4 border shadow-sm bg-light">
-              <h5 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                <ShieldCheck size={22} className="text-primary" />
-                <span>Core Governance Pillars</span>
-              </h5>
-              <div className="d-flex flex-column gap-3 small">
-                <div className="d-flex align-items-start gap-2.5">
-                  <CheckCircle className="text-success flex-shrink-0 mt-0.5" size={18} />
-                  <div>
-                    <strong>Data-Driven Scheme Rules:</strong> Rules stored as data in MongoDB. Zero code deployments needed to update income caps or marks criteria.
-                  </div>
-                </div>
-                <div className="d-flex align-items-start gap-2.5">
-                  <CheckCircle className="text-success flex-shrink-0 mt-0.5" size={18} />
-                  <div>
-                    <strong>100% Offline Privacy:</strong> OCR runs locally inside Node.js. No student documents ever leave the secure government environment.
-                  </div>
-                </div>
-                <div className="d-flex align-items-start gap-2.5">
-                  <CheckCircle className="text-success flex-shrink-0 mt-0.5" size={18} />
-                  <div>
-                    <strong>Human-in-the-Loop AI:</strong> The system automatically extracts, evaluates, and flags, but a designated Ministry Officer always makes the final award decision.
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+    </AppShell>
   );
 };
 

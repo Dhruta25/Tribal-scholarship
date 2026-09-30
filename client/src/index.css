@@ -956,3 +956,460 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #94a3b8;
   color: #ffffff;
 }
+
+/* ==========================================================================
+   KISANSETU / VANSETU ULTRA-SLEEK OBSIDIAN DARK DESIGN SYSTEM
+   ========================================================================== */
+
+/* Dark Obsidian Core Variables */
+:root {
+  --ks-bg-body: #08080a;
+  --ks-bg-sidebar: #0b0b0e;
+  --ks-bg-card: #121215;
+  --ks-bg-card-hover: #17171c;
+  --ks-bg-card-inner: #1a1a20;
+  --ks-border-card: rgba(255, 255, 255, 0.08);
+  --ks-border-hover: rgba(255, 255, 255, 0.2);
+  --ks-text-primary: #ffffff;
+  --ks-text-muted: #8e8e93;
+  --ks-text-subtle: #636366;
+  --ks-accent-red: #dc2626;
+  --ks-accent-red-hover: #ef4444;
+  --ks-pill-active-bg: #ffffff;
+  --ks-pill-active-text: #000000;
+}
+
+body {
+  background-color: var(--ks-bg-body) !important;
+  color: var(--ks-text-primary) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* KisanSetu Sidebar Navigation */
+.ks-sidebar {
+  width: 240px;
+  background-color: var(--ks-bg-sidebar);
+  border-right: 1px solid var(--ks-border-card);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.ks-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 24px 12px;
+  text-decoration: none !important;
+}
+
+.ks-brand-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  color: #000000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.ks-brand-title {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-family: 'Outfit', sans-serif;
+}
+
+.ks-nav-section-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #636366;
+  text-transform: uppercase;
+  padding: 8px 12px 6px 12px;
+}
+
+.ks-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: #8e8e93;
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: 4px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.ks-nav-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ks-nav-item.active {
+  background: var(--ks-pill-active-bg) !important;
+  color: var(--ks-pill-active-text) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.12);
+}
+
+.ks-nav-item.active svg {
+  color: #000000 !important;
+}
+
+.ks-badge-red {
+  background: var(--ks-accent-red);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 2px 7px;
+  margin-left: auto;
+  line-height: 1;
+}
+
+.ks-sidebar-status-card {
+  margin-top: auto;
+  background: #121215;
+  border: 1px solid var(--ks-border-card);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.ks-status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulseGreen 2s infinite ease-in-out;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* KisanSetu Top Bar */
+.ks-topbar {
+  height: 64px;
+  background: var(--ks-bg-body);
+  border-bottom: 1px solid var(--ks-border-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 990;
+}
+
+.ks-topbar-breadcrumb {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ks-text-muted);
+  text-transform: uppercase;
+}
+
+.ks-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ks-topbar-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--ks-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.ks-topbar-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.ks-lang-pill-container {
+  background: #121215;
+  border: 1px solid var(--ks-border-card);
+  border-radius: 999px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ks-lang-pill-btn {
+  background: transparent;
+  border: none;
+  color: #8e8e93;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.ks-lang-pill-btn.active {
+  background: #ffffff;
+  color: #000000;
+  font-weight: 700;
+}
+
+/* Main Cards & Display Typography */
+.ks-card {
+  background: var(--ks-bg-card);
+  border: 1px solid var(--ks-border-card);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ks-card:hover {
+  border-color: var(--ks-border-hover);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.ks-card-sub {
+  background: var(--ks-bg-card-inner);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.ks-card-white {
+  background: #f4f4f6;
+  color: #0a0a0c;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.ks-card-white h1,
+.ks-card-white h2,
+.ks-card-white h3,
+.ks-card-white p,
+.ks-card-white div {
+  color: #0a0a0c !important;
+}
+
+.ks-display-title {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+}
+
+.ks-display-sub {
+  font-size: 1.1rem;
+  color: #8e8e93;
+  line-height: 1.5;
+}
+
+.ks-module-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8e8e93;
+  font-family: monospace;
+}
+
+/* Custom Buttons & Pills */
+.ks-btn-white {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none !important;
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+
+.ks-btn-white:hover {
+  background: #e5e5e5;
+  color: #000000;
+  transform: translateY(-1px);
+}
+
+.ks-btn-dark {
+  background: #141418;
+  color: #ffffff;
+  border: 1px solid var(--ks-border-card);
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none !important;
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+
+.ks-btn-dark:hover {
+  background: #1c1c22;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.ks-btn-danger {
+  background: var(--ks-accent-red);
+  color: #ffffff;
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.ks-btn-danger:hover {
+  background: var(--ks-accent-red-hover);
+  color: #ffffff;
+}
+
+.ks-signal-pill {
+  background: #18181c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+}
+
+/* Audio Player Wave Animation */
+.ks-audio-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+}
+
+.ks-wave-bar {
+  width: 3px;
+  background: #ffffff;
+  border-radius: 2px;
+  animation: waveMotion 1.2s infinite ease-in-out;
+}
+
+.ks-wave-bar:nth-child(1) { height: 12px; animation-delay: 0s; }
+.ks-wave-bar:nth-child(2) { height: 20px; animation-delay: 0.2s; }
+.ks-wave-bar:nth-child(3) { height: 15px; animation-delay: 0.4s; }
+.ks-wave-bar:nth-child(4) { height: 22px; animation-delay: 0.1s; }
+.ks-wave-bar:nth-child(5) { height: 10px; animation-delay: 0.3s; }
+
+@keyframes waveMotion {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+/* Form inputs dark styling */
+.ks-select, .ks-input {
+  background-color: #141418 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 0.9rem !important;
+}
+
+.ks-select:focus, .ks-input:focus {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Interactive Bar Chart for Distress Risk Trend */
+.ks-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 180px;
+  padding-top: 20px;
+}
+
+.ks-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.ks-bar-fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: #333338;
+  transition: all 0.3s ease;
+}
+
+.ks-bar-col:hover .ks-bar-fill {
+  background: #55555c;
+  transform: scaleY(1.03);
+}
+
+.ks-bar-fill.critical {
+  background: var(--ks-accent-red) !important;
+  box-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+}
+
+.ks-bar-label {
+  font-size: 0.65rem;
+  color: #636366;
+  font-weight: 600;
+}
+
+/* Responsiveness Mobile Adaptability */
+@media (max-width: 991px) {
+  .ks-sidebar {
+    width: 100%;
+    min-height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--ks-border-card);
+  }
+  .ks-display-title {
+    font-size: 2.1rem;
+  }
+}
+

@@ -27,37 +27,63 @@ const Navbar = () => {
   const isAdmin = isAuthenticated && user?.role === 'admin';
 
   return (
-    <BsNavbar expand="lg" className="gov-header-bg py-2 shadow-sm border-bottom border-secondary border-opacity-25" variant="dark">
-      <Container>
-        {/* Brand */}
-        <BsNavbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2 fw-bold text-white fs-5">
-          <Award className="text-warning" size={24} />
+    <BsNavbar expand="lg" className="py-2 shadow-sm" style={{ background: '#121215', borderBottom: '1px solid #22222a' }} variant="dark">
+      <Container fluid className="px-3 px-md-4">
+        {/* Brand in Lower Navbar */}
+        <BsNavbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2 fw-bold text-white fs-5 me-4">
+          <Award className="text-warning" size={22} />
           <span>MoTA <span className="text-warning">Fellowships</span></span>
         </BsNavbar.Brand>
 
         <BsNavbar.Toggle aria-controls="main-navbar-nav" />
         <BsNavbar.Collapse id="main-navbar-nav">
-          <Nav className="me-auto align-items-center">
-            <Nav.Link as={NavLink} to="/" className="gov-nav-link">
+          <Nav className="me-auto align-items-center gap-1 my-2 my-lg-0">
+            <Nav.Link
+              as={NavLink}
+              to="/"
+              end
+              className={({ isActive }) => `px-3 py-1.5 rounded-3 fw-medium ${isActive ? 'bg-secondary bg-opacity-25 text-white' : 'text-light text-opacity-75'}`}
+              style={{ fontSize: '0.92rem' }}
+            >
               {t('nav.home', 'Home')}
             </Nav.Link>
-            <Nav.Link as={NavLink} to="/schemes" className="gov-nav-link">
-              {t('nav.schemes', 'Schemes')}
+            <Nav.Link
+              as={NavLink}
+              to="/schemes"
+              className={({ isActive }) => `px-3 py-1.5 rounded-3 fw-medium ${isActive ? 'bg-secondary bg-opacity-25 text-white' : 'text-light text-opacity-75'}`}
+              style={{ fontSize: '0.92rem' }}
+            >
+              {t('nav.schemes', 'Schemes & Fellowships')}
             </Nav.Link>
-            <Nav.Link as={NavLink} to="/eligibility" className="gov-nav-link text-warning fw-semibold">
+            <Nav.Link
+              as={NavLink}
+              to="/eligibility"
+              className={({ isActive }) => `px-3 py-1.5 rounded-3 fw-medium ${isActive ? 'bg-secondary bg-opacity-25 text-white' : 'text-light text-opacity-75'}`}
+              style={{ fontSize: '0.92rem' }}
+            >
               {t('nav.eligibility', 'Eligibility Pre-Check')}
             </Nav.Link>
 
             {/* ML Hub (AI Models) - Admin Only */}
             {isAdmin && (
-              <Nav.Link as={NavLink} to="/ml-hub" className="gov-nav-link text-info fw-semibold">
-                ⚡ ML Hub (AI Models)
+              <Nav.Link
+                as={NavLink}
+                to="/ml-hub"
+                className={({ isActive }) => `px-3 py-1.5 rounded-3 fw-medium text-info ${isActive ? 'bg-info bg-opacity-10 text-white' : ''}`}
+                style={{ fontSize: '0.92rem' }}
+              >
+                ⚡ ML Hub
               </Nav.Link>
             )}
 
             {/* Quick Link based on logged-in role */}
             {isAuthenticated && (
-              <Nav.Link as={NavLink} to={getDashboardPath()} className="gov-nav-link">
+              <Nav.Link
+                as={NavLink}
+                to={getDashboardPath()}
+                className={({ isActive }) => `px-3 py-1.5 rounded-3 fw-medium ${isActive ? 'bg-secondary bg-opacity-25 text-white' : 'text-light text-opacity-75'}`}
+                style={{ fontSize: '0.92rem' }}
+              >
                 {t('nav.dashboard', 'Workspace')}
               </Nav.Link>
             )}
@@ -84,9 +110,10 @@ const Navbar = () => {
                   }
                   id="user-nav-dropdown"
                   align="end"
+                  menuVariant="dark"
                 >
                   <NavDropdown.Header>
-                    <div className="fw-bold text-dark">{user?.name}</div>
+                    <div className="fw-bold text-white">{user?.name}</div>
                     <div className="text-muted small">{user?.email}</div>
                   </NavDropdown.Header>
                   <NavDropdown.Divider />
@@ -147,18 +174,26 @@ const Navbar = () => {
                       <Trash2 size={14} className="me-2" /> Delete Account
                     </NavDropdown.Item>
                   )}
-                  <NavDropdown.Item onClick={handleLogout} className="text-secondary fw-semibold">
+                  <NavDropdown.Item onClick={handleLogout} className="text-danger fw-semibold">
                     <LogOut size={15} className="me-2" /> {t('nav.logout', 'Sign Out')}
                   </NavDropdown.Item>
                 </NavDropdown>
               </>
             ) : (
-              <div className="d-flex align-items-center gap-2">
-                <Link to="/login" className="btn btn-outline-light btn-sm px-3 fw-semibold">
+              <div className="d-flex align-items-center gap-2 ms-lg-3">
+                <Link
+                  to="/login"
+                  className="btn btn-outline-light btn-sm px-3 py-1.5 fw-semibold rounded-2"
+                  style={{ fontSize: '0.85rem', borderColor: 'rgba(255,255,255,0.3)' }}
+                >
                   {t('nav.login', 'Sign In')}
                 </Link>
-                <Link to="/register" className="btn btn-warning btn-sm px-3 fw-bold text-dark">
-                  {t('nav.register', 'Register')}
+                <Link
+                  to="/register"
+                  className="btn btn-warning btn-sm px-3 py-1.5 fw-bold text-dark rounded-2"
+                  style={{ fontSize: '0.85rem', backgroundColor: '#fbbf24', borderColor: '#fbbf24' }}
+                >
+                  {t('nav.register', 'Register (ST Scholar)')}
                 </Link>
               </div>
             )}
@@ -170,3 +205,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

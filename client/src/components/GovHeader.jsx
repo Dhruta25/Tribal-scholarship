@@ -6,7 +6,7 @@ import { Award, Globe, Moon, Sun } from 'lucide-react';
 
 const GovHeader = () => {
   const { lang, setLang } = useLanguage();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -18,21 +18,32 @@ const GovHeader = () => {
   };
 
   return (
-    <header className="gov-header-wrapper">
-      {/* Tricolour Accent Line at Very Top */}
-      <div className="gov-tricolour-strip"></div>
+    <header className="gov-header-wrapper" style={{ background: '#0a0a0d', borderBottom: '1px solid #1f1f25' }}>
+      {/* Tricolour Accent Strip at Very Top */}
+      <div
+        className="gov-tricolour-strip"
+        style={{
+          height: '4px',
+          background: 'linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)'
+        }}
+      ></div>
 
-      {/* Main Government Portal Header with 10px Increased Padding */}
-      <div className="gov-top-header border-bottom" style={{ paddingTop: '10px', paddingBottom: '20px' }}>
-        <Container className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-          {/* Brand Logo & Titles */}
+      {/* Main Government Portal Header */}
+      <div className="py-2.5 px-3 px-md-4">
+        <Container fluid className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          {/* Brand Emblem & Titles */}
           <Link to="/" className="d-flex align-items-center gap-3 text-decoration-none">
-            {/* Navy Emblem Icon Box with Golden Ribbon */}
+            {/* Dark Emblem Box with Golden Ribbon */}
             <div
-              className="gov-emblem-box rounded-3 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
-              style={{ width: '50px', height: '50px', backgroundColor: '#0B2545' }}
+              className="rounded-3 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
+              style={{
+                width: '46px',
+                height: '46px',
+                backgroundColor: '#16161a',
+                border: '1px solid rgba(255, 255, 255, 0.12)'
+              }}
             >
-              <Award size={28} className="text-warning" strokeWidth={2.2} />
+              <Award size={26} className="text-warning" strokeWidth={2.2} />
             </div>
 
             {/* Title Hierarchy */}
@@ -40,60 +51,62 @@ const GovHeader = () => {
               {/* Row 1: Government of India Pill & SIH ID */}
               <div className="d-flex align-items-center gap-2 mb-1">
                 <span
-                  className="gov-pill-badge"
                   style={{
-                    backgroundColor: '#fffbeb',
-                    color: '#d97706',
-                    border: '1px solid #fde68a',
-                    fontSize: '0.75rem',
+                    backgroundColor: '#262010',
+                    color: '#fbbf24',
+                    border: '1px solid #4a3810',
+                    fontSize: '0.72rem',
                     fontWeight: '800',
-                    padding: '2px 8px',
+                    padding: '2px 9px',
                     borderRadius: '50rem',
-                    letterSpacing: '0.4px',
+                    letterSpacing: '0.5px',
                     lineHeight: '1.2'
                   }}
                 >
                   GOVERNMENT OF INDIA
                 </span>
-                <span className="text-muted" style={{ fontSize: '0.85rem', fontWeight: '500' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: '500', color: '#91919e' }}>
                   SIH-26239
                 </span>
               </div>
 
               {/* Row 2: Hindi & English Ministry Title */}
               <div
-                className="gov-title-text fw-bold text-dark"
-                style={{ fontSize: '1.25rem', letterSpacing: '-0.2px', lineHeight: '1.25' }}
+                className="fw-bold text-white"
+                style={{ fontSize: '1.18rem', letterSpacing: '-0.2px', lineHeight: '1.2' }}
               >
-                <span className="text-navy">जनजातीय कार्य मंत्रालय</span>{' '}
-                <span className="text-muted fw-normal" style={{ opacity: 0.7 }}>|</span>{' '}
-                <span className="text-navy">Ministry of Tribal Affairs</span>
+                <span>जनजातीय कार्य मंत्रालय</span>{' '}
+                <span style={{ color: '#555560', fontWeight: 'normal' }}>|</span>{' '}
+                <span>Ministry of Tribal Affairs</span>
               </div>
 
               {/* Row 3: Subtitle */}
-              <div className="gov-subtitle-text text-muted" style={{ fontSize: '1rem', lineHeight: '1.2' }}>
+              <div style={{ fontSize: '0.86rem', color: '#a1a1aa', lineHeight: '1.2' }}>
                 National Fellowship &amp; Scholarship Management System for Scheduled Tribes (ST)
               </div>
             </div>
           </Link>
 
           {/* Right Action Bar (Language Switcher & Theme Switcher) */}
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-2">
             {/* Language Switcher */}
-            <div className="d-flex align-items-center gap-1.5 bg-light border px-2.5 py-1.5 rounded-2 gap-1">
-              <Globe size={15} className="text-primary" />
+            <div
+              className="d-flex align-items-center gap-1 border px-2.5 py-1 rounded-3"
+              style={{ background: '#141418', borderColor: 'rgba(255,255,255,0.12)' }}
+            >
+              <Globe size={14} className="text-warning me-1" />
               <button
-                className={`btn btn-sm py-0 px-1 border-0 ${lang === 'en' ? 'fw-bold text-primary text-decoration-underline' : 'text-muted'}`}
+                className={`btn btn-sm py-0 px-1 border-0 ${lang === 'en' ? 'fw-bold text-white text-decoration-underline' : 'text-secondary'}`}
                 onClick={() => setLang('en')}
-                style={{ fontSize: '1.2rem' }}
+                style={{ fontSize: '0.85rem' }}
               >
                 English
               </button>
-              <span className="text-muted" style={{ fontSize: '0.75rem' }}>|</span>
+              <span style={{ fontSize: '0.75rem', color: '#555560' }}>|</span>
               <button
-                className={`btn btn-sm py-0 px-1 border-0 ${lang === 'hi' ? 'fw-bold text-primary text-decoration-underline' : 'text-muted'}`}
+                className={`btn btn-sm py-0 px-1 border-0 ${lang === 'hi' ? 'fw-bold text-white text-decoration-underline' : 'text-secondary'}`}
                 onClick={() => setLang('hi')}
-                style={{ fontSize: '1.2rem' }}
+                style={{ fontSize: '0.85rem' }}
               >
                 हिन्दी
               </button>
@@ -102,19 +115,19 @@ const GovHeader = () => {
             {/* Theme Toggle (Dark / Light) */}
             <button
               onClick={toggleTheme}
-              className="btn btn-sm btn-light border py-1.5 px-2.5 rounded-2 d-flex align-items-center gap-1.5"
+              className="btn btn-sm border py-1 px-3 rounded-3 d-flex align-items-center gap-1.5 text-white"
+              style={{ background: '#141418', borderColor: 'rgba(255,255,255,0.12)', fontSize: '0.85rem' }}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              style={{ fontSize: '1.2rem' }}
             >
               {theme === 'dark' ? (
                 <>
-                  <Sun size={15} className="text-warning" />
-                  <span className="small">Light</span>
+                  <Moon size={14} className="text-warning" />
+                  <span>Dark</span>
                 </>
               ) : (
                 <>
-                  <Moon size={15} className="text-secondary" />
-                  <span className="small">Dark</span>
+                  <Sun size={14} className="text-warning" />
+                  <span>Light</span>
                 </>
               )}
             </button>
@@ -126,3 +139,4 @@ const GovHeader = () => {
 };
 
 export default GovHeader;
+
