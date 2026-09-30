@@ -84,13 +84,16 @@ jobs:
           echo "🚀 Found EC2 Instance: $INSTANCE_ID. Triggering automated deployment..."
 
           COMMANDS='[
+            "exec 200>/var/lock/tribal-deploy.lock",
+            "flock 200",
             "cd /opt/tribal-scholarship",
             "git fetch origin main",
             "git reset --hard origin/main",
+            "docker container prune -f",
             "docker compose -f docker-compose.prod.yml up -d --build --remove-orphans",
             "docker compose -f docker-compose.prod.yml restart nginx",
             "docker system prune -f",
-            "sleep 5",
+            "sleep 3",
             "curl -f http://localhost/healthz || exit 1"
           ]'
 
