@@ -1,0 +1,27 @@
+name: 🔄 Sync Upstream Changes
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: 🔄 Sync with Dhruta25/Tribal-scholarship
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Merge Upstream
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/Dhruta25/Tribal-scholarship.git || true
+          git fetch upstream main
+          git merge upstream/main -m "chore(sync): merge upstream changes from Dhruta25/Tribal-scholarship" || echo "No conflicts or already up to date"
+          git push origin main || true

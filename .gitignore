@@ -59,3 +59,13 @@ ml/venv/
 venv/
 ENV/
 .pytest_cache/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+!*.tfvars.example
+terraform.rc
