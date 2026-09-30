@@ -768,45 +768,61 @@ h1, h2, h3, h4, h5, h6 {
   100% { top: 0%; opacity: 0.8; }
 }
 
-/* Chat Widget */
+/* Chat Widget - Black & White Obsidian Dark Theme */
 .chat-floating-btn {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 1050;
-  width: 58px;
-  height: 58px;
+  z-index: 9999;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--gov-navy) 0%, #1e40af 100%);
-  color: #ffffff;
+  background: #16161a !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.85) !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .chat-floating-btn:hover {
   transform: scale(1.08);
+  background: #222228 !important;
+  border-color: #fbbf24 !important;
 }
 
 .chat-window {
   position: fixed;
   bottom: 92px;
   right: 24px;
-  width: 380px;
-  height: 520px;
-  max-width: calc(100vw - 48px);
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 385px;
+  height: 540px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 120px);
+  background: #0a0a0d !important;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95) !important;
   display: flex;
   flex-direction: column;
-  z-index: 1050;
+  z-index: 9999;
   overflow: hidden;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #282832 !important;
 }
+
+.chat-msg-bubble,
+.chat-msg-bubble div,
+.chat-msg-bubble p,
+.chat-msg-bubble span,
+.chat-msg-bubble strong,
+.chat-msg-bubble li,
+.chat-msg-bubble em {
+  color: #ffffff !important;
+}
+
+
 
 /* Sidebar Active Styling */
 .gov-sidebar-item {

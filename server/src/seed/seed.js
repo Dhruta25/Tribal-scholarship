@@ -123,7 +123,7 @@ Enrolment No: 1029/39481/10293`;
 
 const seedDatabase = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/sih_scholarship';
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/sih_scholarship';
     console.log(`[Seed]: Connecting to ${mongoUri}...`);
     await mongoose.connect(mongoUri);
 

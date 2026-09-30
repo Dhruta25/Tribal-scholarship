@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Scheme from '../models/Scheme.js';
 import Application from '../models/Application.js';
 import Deficiency from '../models/Deficiency.js';
@@ -8,6 +9,9 @@ import { sendNotification } from './notificationService.js';
  * Background Reminder Service for Scheduled Reminders and Deadlines
  */
 export const checkAndSendReminders = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    return; // DB not connected, skip background DB scans safely
+  }
   try {
     const now = new Date();
 

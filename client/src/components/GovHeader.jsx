@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { Award, Globe, Moon, Sun } from 'lucide-react';
+import { Award, Globe } from 'lucide-react';
 
 const GovHeader = () => {
   const { lang, setLang } = useLanguage();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
-  };
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+  }, []);
 
   return (
     <header className="gov-header-wrapper" style={{ background: '#0a0a0d', borderBottom: '1px solid #1f1f25' }}>
@@ -87,7 +82,7 @@ const GovHeader = () => {
             </div>
           </Link>
 
-          {/* Right Action Bar (Language Switcher & Theme Switcher) */}
+          {/* Right Action Bar (Language Switcher Only) */}
           <div className="d-flex align-items-center gap-2">
             {/* Language Switcher */}
             <div
@@ -111,26 +106,6 @@ const GovHeader = () => {
                 हिन्दी
               </button>
             </div>
-
-            {/* Theme Toggle (Dark / Light) */}
-            <button
-              onClick={toggleTheme}
-              className="btn btn-sm border py-1 px-3 rounded-3 d-flex align-items-center gap-1.5 text-white"
-              style={{ background: '#141418', borderColor: 'rgba(255,255,255,0.12)', fontSize: '0.85rem' }}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            >
-              {theme === 'dark' ? (
-                <>
-                  <Moon size={14} className="text-warning" />
-                  <span>Dark</span>
-                </>
-              ) : (
-                <>
-                  <Sun size={14} className="text-warning" />
-                  <span>Light</span>
-                </>
-              )}
-            </button>
           </div>
         </Container>
       </div>
@@ -139,4 +114,5 @@ const GovHeader = () => {
 };
 
 export default GovHeader;
+
 
