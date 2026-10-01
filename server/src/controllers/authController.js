@@ -47,12 +47,12 @@ export const register = async (req, res, next) => {
       preferredLanguage, profile: { category: 'ST', ...profile } });
     try {
       const delivery = await sendOtpEmail({ toEmail: email, name: user.name, otp });
-      return res.status(201).json({ success: true, userId: user._id, email,
+      return res.status(201).json({ success: true, requiresVerification: true, userId: user._id, email,
         message: delivery.mode === 'development' ? 'Account created. Use the development verification code shown below.' : 'Account created. A verification code was sent to your email.',
         ...otpResponse(delivery, otp) });
     } catch (error) {
       // Keep the pending account so the user can retry delivery without losing registration.
-      return res.status(503).json({ success: false, code: 'OTP_DELIVERY_FAILED', email, userId: user._id,
+      return res.status(503).json({ success: false, requiresVerification: true, code: 'OTP_DELIVERY_FAILED', email, userId: user._id,
         message: 'Your account was created, but the verification email could not be sent. Please retry using Resend Code.' });
     }
   } catch (error) { next(error); }

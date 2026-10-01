@@ -77,8 +77,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (formData) => {
-    const res = await axiosClient.post('/auth/register', formData);
-    return res.data;
+    try {
+      const res = await axiosClient.post('/auth/register', formData);
+      return res.data;
+    } catch (err) {
+      // If account was created but OTP delivery failed (503), still return the data
+      // so the frontend can navigate to /verify-otp and let the user resend
+      const data = err.response?.data;
+      if (data?.code === 'OTP_DELIVERY_FAILED' || data?.requiresVerification) {
+        return data;
+      }
+      throw err;
+    }
   };
 
   const verifyOtp = async (email, otp) => {

@@ -176,8 +176,8 @@ const Home = () => {
               }}
             >
               <img
-                src="/images/hero/slide_nfst.jpg"
-                alt="Scheduled Tribe research scholar engaged in higher education studies"
+                src="/images/hero/slide_student_library.jpg"
+                alt="Tribal student studying on laptop in university library"
                 className="w-100 object-fit-cover"
                 style={{ height: '360px', display: 'block' }}
                 onError={(e) => {

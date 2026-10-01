@@ -78,9 +78,13 @@ const Register = () => {
       };
 
       const res = await register(payload);
-      if (res && res.requiresVerification) {
+      // Always go to verify-otp if the account was created (success or OTP delivery failed)
+      if (res && (res.requiresVerification || res.success)) {
         navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`, {
-          state: { message: res.message || 'OTP verification code sent to your registered email.' }
+          state: {
+            message: res.message || 'OTP verification code sent to your registered email.',
+            otpDebug: res.otpDebug || ''
+          }
         });
       } else {
         navigate('/login', {
