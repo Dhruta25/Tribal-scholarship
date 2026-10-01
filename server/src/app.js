@@ -25,17 +25,55 @@ import mlRoutes from './routes/mlRoutes.js';
 const app = express();
 
 
+// Allowed domains and suffixes for production and previews
+const defaultAllowedDomains = [
+  'tribalscholarship.duckdns.org',
+  'duckdns.org',
+  'nip.io',
+  'trycloudflare.com'
+];
+
 // Middlewares
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps, curl, or server-to-server)
     if (!origin) return callback(null, true);
-    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+
+    // Permissive in test or non-production environments
+    if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
       return callback(null, true);
     }
-    if ((process.env.CLIENT_URL || '').split(',').map(value => value.trim()).includes(origin)) {
+
+    // Allow localhost and local loopback on any port (HTTP or HTTPS)
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
       return callback(null, true);
     }
+
+    // Configured CLIENT_URL list (comma-separated or wildcard)
+    const configuredOrigins = (process.env.CLIENT_URL || '')
+      .split(',')
+      .map(v => v.trim())
+      .filter(Boolean);
+
+    if (configuredOrigins.includes('*') || configuredOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Dynamic verification for deployed domains and raw IP hosts
+    try {
+      const parsedUrl = new URL(origin);
+      const hostname = parsedUrl.hostname;
+      if (
+        defaultAllowedDomains.some(domain => hostname === domain || hostname.endsWith(`.${domain}`)) ||
+        /^\d+\.\d+\.\d+\.\d+$/.test(hostname)
+      ) {
+        return callback(null, true);
+      }
+    } catch {
+      // Ignore invalid URL format
+    }
+
+    console.warn(`[CORS Blocked] Origin "${origin}" is not in the whitelist.`);
     return callback(Object.assign(new Error('This origin is not allowed.'), { status: 403 }));
   },
   credentials: true

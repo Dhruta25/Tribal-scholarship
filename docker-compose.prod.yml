@@ -13,7 +13,7 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRE=7d
-      - CLIENT_URL=${CLIENT_URL:-http://localhost}
+      - CLIENT_URL=${CLIENT_URL:-https://tribalscholarship.duckdns.org,https://tribal-scholarship.65.1.139.149.nip.io,http://localhost}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     networks:
       - mota_net
