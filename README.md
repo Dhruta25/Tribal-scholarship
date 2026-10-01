@@ -1,319 +1,467 @@
 <div align="center">
 
 # 🏛️ AI-Enabled Scholarship & Fellowship Management System
+
 ### **Smart India Hackathon 2026 | Problem Statement ID: 26239**
 #### **Ministry of Tribal Affairs (MoTA), Government of India**
 
-[![SIH 2026](https://img.shields.io/badge/SIH-2026-orange.svg?style=for-the-badge&logo=target)](https://www.sih.gov.in/)
-[![Ministry of Tribal Affairs](https://img.shields.io/badge/Ministry-MoTA%20Govt%20of%20India-0B2545.svg?style=for-the-badge&logo=india)](https://tribal.nic.in/)
+[![SIH 2026](https://img.shields.io/badge/SIH-2026-orange.svg?style=for-the-badge)](https://www.sih.gov.in/)
+[![MoTA](https://img.shields.io/badge/Ministry-MoTA%20Govt%20of%20India-0B2545.svg?style=for-the-badge)](https://tribal.nic.in/)
 [![React 18](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61DAFB.svg?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933.svg?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248.svg?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
-[![ML Pipeline](https://img.shields.io/badge/ML%20Accuracy-99.17%25%20Random%20Forest-FF6F00.svg?style=for-the-badge&logo=scikit-learn)](https://scikit-learn.org/)
-[![Offline OCR](https://img.shields.io/badge/OCR-100%25%20Offline%20Tesseract-blueviolet.svg?style=for-the-badge)](https://tesseract.projectnaptha.com/)
-
-**🔗 Live Demo:** https://ai-enabled-scholarship-fellowship-m.vercel.app  ·  Try: admin@mota.gov.in / Admin@123  ·  Student: rahul.st@example.com / Applicant@123
-
-<br/>
+[![ML](https://img.shields.io/badge/ML-Scikit--Learn%20%7C%2099.17%25%20Accuracy-FF6F00.svg?style=for-the-badge)](https://scikit-learn.org/)
+[![OCR](https://img.shields.io/badge/OCR-100%25%20Offline%20Tesseract.js-blueviolet.svg?style=for-the-badge)](https://tesseract.projectnaptha.com/)
 
 > **"Empowering Scheduled Tribe (ST) Scholars through AI-Assisted Transparent Governance, Local Document Intelligence, and Automated Merit Delivery."**
 
-<br/>
-
-[🌟 Problem & Solution](#-the-problem--our-solution) •
-[🤖 Machine Learning In-Depth](#-why-machine-learning--which-parts-are-used) •
-[🔍 Verification Pipeline](#-document-verification--mismatch-pipeline) •
-[🛠️ Tools & Tech Stack](#-tools--technologies-used) •
-[📜 5 Official Schemes](#-the-5-official-mota-schemes) •
-[👥 Role Workflows](#-the-four-operational-roles) •
-[⚡ Quick Start](#-local-quick-start) •
-[🔑 Demo Accounts](#-pre-configured-demo-credentials)
-
 ---
 
+[🌟 Problem & Solution](#-the-problem--our-solution) •
+[🏗️ Architecture](#-system-architecture) •
+[🤖 Machine Learning](#-machine-learning-pipeline) •
+[🔍 Verification Pipeline](#-document-verification--mismatch-pipeline) •
+[🛠️ Tech Stack](#-tools--technologies-used) •
+[📁 Project Structure](#-project-structure) •
+[📜 5 Official Schemes](#-the-5-official-mota-schemes) •
+[👥 Role Workflows](#-the-four-operational-roles) •
+[⚡ Quick Start](#-local-quick-start)
+
 </div>
+
+---
 
 ## 🌟 The Problem & Our Solution
 
 ### 🚩 The Real-World Problem
-The **Ministry of Tribal Affairs (MoTA)** administers national higher education and research fellowships for Scheduled Tribe (ST) students across India and abroad. Historically, the scholarship lifecycle suffered from major friction points:
 
-1. **Massive Processing Delays:** Manual physical paper verification and siloed state workflows resulted in 3–6 months of backlog before scholars received fellowship disbursements.
-2. **Document Forgery & Exploitation:** Dishonest actors submitted tampered income or caste certificates and duplicate applications across multiple states to claim double benefits.
-3. **Rigid Hardcoded Rules:** Changes to scheme policies (e.g. income ceilings or quota thresholds) required backend software redeployment, causing system downtime.
-4. **Officer Overburden:** Scrutiny officers had to manually compare 20+ fields per application against uploaded document PDFs.
-5. **Language & Information Barrier:** Rural ST scholars lacked instant pre-check guidance and regional language options to determine their scheme eligibility.
+The **Ministry of Tribal Affairs (MoTA)** administers national higher education and research fellowships for Scheduled Tribe (ST) students across India. The scholarship lifecycle historically suffered from critical friction points:
+
+1. **Massive Processing Delays** — Manual physical paper verification and siloed state workflows created 3–6 month backlogs before scholars received disbursements.
+2. **Document Forgery & Exploitation** — Tampered income or caste certificates and duplicate applications across multiple states were used to claim double benefits.
+3. **Rigid Hardcoded Rules** — Changes to scheme policies (income ceilings, quota thresholds) required backend code redeployment and system downtime.
+4. **Officer Overburden** — Scrutiny officers manually compared 20+ fields per application against uploaded document PDFs.
+5. **Language & Information Barrier** — Rural ST scholars lacked instant pre-check guidance to determine their scheme eligibility.
 
 ---
 
 ### 💡 Our End-to-End Solution
-This platform modernizes the entire scholarship governance pipeline through an **AI-Assisted, Human-in-the-Loop Architecture**:
 
-| Problem Encountered | Our Technological Solution | Impact |
-| :--- | :--- | :--- |
-| **Months of Manual Verification** | **100% Offline AI OCR Vision + Mismatch Engine** (`Tesseract.js` + `pdf-parse`) | Instant entity extraction; reduces manual inspection time by **85%**. |
-| **Document Forgery & Duplicates** | **SHA-256 Binary Hashing + Isolation Forest Anomaly Detection** | **100% ROC-AUC** fraud detection; stops duplicate certificates across states. |
-| **Hardcoded Policy Logic** | **Dynamic Rule Builder as Data in MongoDB** | Instant updates to income caps and marks criteria with **zero code deployments**. |
-| **Complex Slot Allocation** | **Multi-Criteria ML Merit Regressor** (R² = 0.9991) | Automated All-India rank calculation with built-in **30% Women Quota** & **5% PwD Quota**. |
-| **Student Uncertainty** | **Instant Zero-Login Pre-Check & Multi-Class Scheme Recommender** | Instant pass/fail feedback and personalized scheme recommendations. |
+An **AI-Assisted, Human-in-the-Loop Architecture** that modernizes the entire scholarship governance pipeline:
+
+| Problem | Our Solution | Impact |
+|:---|:---|:---|
+| Months of manual verification | 100% Offline AI OCR (Tesseract.js + pdf-parse) | Instant entity extraction, ~85% less manual effort |
+| Document forgery & duplicates | SHA-256 Binary Hashing + Isolation Forest Anomaly Detection | 100% ROC-AUC fraud detection |
+| Hardcoded policy logic | Dynamic Rule Builder stored as data in MongoDB | Zero-downtime policy updates |
+| Complex slot allocation | Multi-Criteria ML Merit Regressor (R² = 0.9991) | Automated All-India rank with 30% Women + 5% PwD quotas |
+| Student uncertainty | Instant Zero-Login Pre-Check + Multi-Class Scheme Recommender | Instant pass/fail feedback |
 
 ---
 
-## 🎯 System Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
     subgraph "🌐 Client Tier (React 18 + Vite + Bootstrap 5)"
-        User["🎓 ST Applicant / Scholar"] -->|Bilingual UI / Dark Mode| WebApp["Vite SPA :5173"]
+        Applicant["🎓 ST Applicant / Scholar"] -->|Bilingual UI| WebApp["Vite SPA :5173"]
         Staff["👑 Admin / 🔍 Verifier / ⚖️ Officer"] -->|RBAC Dashboards| WebApp
     end
 
-    subgraph "⚡ Backend & Micro-Services Tier (Node.js + Express :5001)"
-        WebApp -->|REST API / JWT / CORS| APIGateway["Express API Gateway"]
-
-        APIGateway --> AuthModule["🔐 Auth & Real Email OTP Service"]
-        APIGateway --> RulesEngine["⚡ Dynamic Rules & Simulation Engine"]
-        APIGateway --> OCREngine["👁️ Local Offline OCR Engine (Tesseract.js)"]
-        APIGateway --> MLBridge["🤖 Python Subprocess ML Inference Bridge"]
-        APIGateway --> MeritEngine["📊 Merit Rank & 30% Women Quota Service"]
-        APIGateway --> FraudEngine["🛡️ Anomaly & Duplicate Certificate Catcher"]
-        APIGateway --> AuditLog["📜 Tamper-Evident Immutable Audit Logger"]
+    subgraph "⚡ Backend Tier (Node.js + Express :5001)"
+        WebApp -->|REST API / JWT / CORS| API["Express API Gateway"]
+        API --> Auth["🔐 Auth & OTP Email Service"]
+        API --> Rules["⚡ Dynamic Rules Engine"]
+        API --> OCR["👁️ Local Offline OCR (Tesseract.js)"]
+        API --> ML["🤖 Python ML Inference Bridge"]
+        API --> Merit["📊 Merit Rank & Quota Service"]
+        API --> Fraud["🛡️ Anomaly & Duplicate Detector"]
+        API --> Audit["📜 Tamper-Evident Audit Logger"]
     end
 
-    subgraph "🤖 AI & Machine Learning Tier"
-        MLBridge -->|Sub-10ms CLI| MLModels["📁 Scikit-Learn Joblib Models"]
-        MLModels --> Mod1["🌲 Eligibility Classifier (99.17%)"]
-        MLModels --> Mod2["📈 Merit Score Regressor (0.9991 R²)"]
-        MLModels --> Mod3["🛡️ Fraud Isolation Forest (100% ROC)"]
-        MLModels --> Mod4["🎯 Scheme Recommender (86.2%)"]
+    subgraph "🤖 ML Tier (Python + Scikit-Learn)"
+        ML -->|subprocess CLI| Models["Joblib Models"]
+        Models --> M1["🌲 Eligibility Classifier (99.17%)"]
+        Models --> M2["📈 Merit Regressor (R²=0.9991)"]
+        Models --> M3["🛡️ Fraud GBDT + Isolation Forest"]
+        Models --> M4["🎯 Scheme Recommender (86.21%)"]
     end
 
-    subgraph "💾 Persistence & Storage Tier"
-        APIGateway -->|Mongoose ODM| CloudDB[(MongoDB Atlas / Local DB)]
-        OCREngine -->|Disk Storage| FileStore["📁 /server/uploads & /samples"]
+    subgraph "💾 Persistence Tier"
+        API -->|Mongoose ODM| DB[(MongoDB Atlas)]
+        OCR -->|Disk| Files["📁 /server/uploads"]
     end
 ```
 
 ---
 
-## 🤖 Why Machine Learning & Which Parts Are Used
+## 🤖 Machine Learning Pipeline
 
-### 1. Why Machine Learning is Used in this Project
-- **Handling Multi-Dimensional Probabilistic Decisions:** Deterministic if-else checks cannot rank thousands of applicants across competing variables (NIRF ranks, GPA distributions, economic need indices, affirmative quotas).
-- **Unsupervised Anomaly & Fraud Detection:** Detects non-linear fraud signatures (e.g. discrepancy between family income and declared assets, statistical outliers in marks distributions, duplicate certificate reuse).
-- **Sub-10ms Intelligent Triage:** Triages applications automatically so human officers focus their scrutiny on high-risk or borderline cases.
+### Why Machine Learning?
 
----
+- **Multi-dimensional ranking** — Deterministic rules cannot rank thousands of applicants across competing variables (NIRF ranks, GPA, economic need, quotas).
+- **Unsupervised fraud detection** — Detects non-linear fraud signatures like income-asset discrepancies, statistical outliers in marks, and duplicate certificate reuse.
+- **Sub-10ms inference** — Triages applications automatically so human officers focus scrutiny on high-risk or borderline cases.
 
-### 2. Which Parts of Machine Learning are Used (The 4 Models)
+### The 4 Trained Models
 
-The system includes **4 custom-trained Machine Learning models** trained on 12,000+ realistic synthetic records modeled directly on official MoTA gazette guidelines:
+Trained on **12,000+ synthetic records** modelled directly on official MoTA gazette guidelines:
 
 ```
-📁 ml/
-├── 📁 models/
-│   ├── eligibility_classifier.joblib     # Random Forest (99.17% Accuracy)
-│   ├── merit_regressor.joblib            # Gradient Boosting (R² = 0.9991)
-│   ├── fraud_classifier.joblib           # GBDT Classifier (100% ROC-AUC)
-│   ├── isolation_forest.joblib           # Isolation Forest Anomaly Detector
-│   ├── scheme_recommender.joblib         # Multi-Class RF (86.21% Accuracy)
-│   └── feature_importance.json          # Explainable AI (XAI) feature weights
+ml/
+├── models/
+│   ├── eligibility_classifier.joblib     # RandomForest — 99.17% Accuracy
+│   ├── merit_regressor.joblib            # GradientBoosting — R² = 0.9991
+│   ├── fraud_classifier.joblib           # GBDT Classifier — 100% ROC-AUC
+│   ├── isolation_forest.joblib           # Unsupervised Anomaly Detector
+│   ├── scheme_recommender.joblib         # Multi-Class RF — 86.21% Accuracy
+│   ├── scholarship_encoders.joblib       # Label encoders
+│   ├── scholarship_scaler.joblib         # Feature scaler
+│   └── feature_importance.json          # XAI feature weights
 ```
 
-| Model Name | Algorithm Used | Evaluation Metric | Purpose & Evaluated Features |
-| :--- | :--- | :---: | :--- |
-| **1. Eligibility Classifier** | `RandomForestClassifier` (120 Estimators, Depth=12) | **99.17% Accuracy**<br/>(0.99 F1-Score) | Classifies application into `Eligible`, `Borderline`, or `Ineligible`. Evaluates: Income, qualifying marks, degree level, NIRF/QS rank, admission status. |
-| **2. Merit Regressor** | `GradientBoostingRegressor` (150 Estimators, LR=0.08) | **R² = 0.9991**<br/>(RMSE: 0.299) | Computes continuous composite merit score (0–100) & All-India percentile rank. Weights: Academic marks (40%), Institute rank (25%), Income need (20%), Women quota (10%), PwD (5%). |
-| **3. Fraud & Anomaly Detector** | Supervised `GBDT` + Unsupervised `IsolationForest` | **100% ROC-AUC**<br/>(100% Precision) | Detects certificate tampering, duplicate hashes, and ratio discrepancies (`income_discrepancy_ratio`, `marks_discrepancy`, `ocr_text_similarity`, `duplicate_cert_count`). |
-| **4. Scheme Recommender** | Multi-Class `RandomForestClassifier` (80 Estimators) | **86.21% Accuracy** | Analyzes applicant education level, caste, income, and career level to recommend the best-fit MoTA scholarship scheme. |
+| Model | Algorithm | Metric | Purpose |
+|:---|:---|:---:|:---|
+| **Eligibility Classifier** | RandomForestClassifier (120 est., depth=12) | **99.17%** | Classifies into `Eligible`, `Borderline`, `Ineligible` |
+| **Merit Regressor** | GradientBoostingRegressor (150 est., lr=0.08) | **R²=0.9991** | Composite merit score (0–100) + All-India percentile |
+| **Fraud Detector** | Supervised GBDT + Unsupervised IsolationForest | **100% ROC-AUC** | Detects certificate tampering, duplicate hashes, ratio anomalies |
+| **Scheme Recommender** | Multi-Class RandomForestClassifier (80 est.) | **86.21%** | Best-fit MoTA scholarship scheme recommendation |
 
-> 🔒 **Admin Exclusive ML Hub:** Ministry Administrators have direct access to `/ml-hub` where they can test live ML inference sliders in real time and inspect feature importance breakdowns.
+> 🔒 **Admin ML Hub:** Ministry Administrators access `/ml-hub` to test live ML inference sliders and inspect feature importance breakdowns in real time.
 
 ---
 
 ## 🔍 Document Verification & Mismatch Pipeline
 
 ```
- Applicant Submits       100% Offline OCR       Automated Mismatch       Verifier Queue
-   Application    ───►   Text Extraction  ───►    Engine Check     ───►  Inspection
-                             │                         │                      │
-                             ▼                         ▼                      ▼
-                      SHA-256 Binary             Cross-Field Checks       Side-by-Side
-                       Hash Stored               (Name, Income, ST)       Doc Preview
-                                                                              │
-                                                                              ▼
-   DBT Disbursed       Admin Publishes          Scrutiny Officer      Verifier Approves
-   & Verified     ◄───   Merit List       ◄───  Assessment Signed ◄── or Raises Deficiency
+ Applicant Submits       Offline OCR            Automated Mismatch       Verifier Queue
+   Application    ───►   Extraction      ───►    Engine Check     ───►   Inspection
+                              │                        │                      │
+                         SHA-256 Hash            Cross-field checks      Side-by-side
+                           stored                (Name, Income, ST)      doc preview
+                                                                               │
+   DBT Disbursed       Admin Publishes        Scrutiny Officer       Verifier Decision
+   & Confirmed    ◄───   Merit List     ◄───  Signed Assessment ◄── (Approve/Reject/
+                                                                       Raise Deficiency)
 ```
 
-### Verification Lifecycle Explained:
-1. **Document Upload & Hashing:** As certificates are uploaded, the server calculates a unique **SHA-256 cryptographic hash** of the file to guarantee uniqueness and prevent re-upload of stolen documents.
-2. **Local Machine Vision (OCR):** Local `Tesseract.js` + `pdf-parse` extracts text entities (Certificate ID, Issuing Authority, Caste Category, Family Income, Student Name) entirely on the local CPU without external cloud APIs.
-3. **Cross-Field Mismatch Detection:** The automated engine compares extracted text against declared profile values (e.g. fuzzy string similarity on names, income threshold validation, designated tribal category verification). Any discrepancy is logged in the `mismatchSchema`.
-4. **Document Verifier Queue (`/verifier/queue`):** Verifiers inspect side-by-side document previews, review OCR confidence scores, and either **Approve**, **Reject**, or mark **Deficient** with explicit instructions sent to the student's Deficiency Inbox.
-5. **Scrutiny Officer Determination (`/officer/scrutiny`):** Officers review the verified dossier and ML eligibility score, recording their official signed decision and mandatory written justification into the **Tamper-Evident Audit Log**.
-6. **Admin Merit Publishing & DBT:** Admins review national rankings, apply the statutory **30% Women Quota** & **5% PwD Quota**, and publish the final merit list for DBT disbursement.
+**Verification Steps:**
+1. **Upload & Hash** — SHA-256 cryptographic hash stored per file to guarantee uniqueness and prevent re-upload of stolen documents.
+2. **Local OCR** — `Tesseract.js` + `pdf-parse` extracts text entities (Certificate ID, Issuing Authority, Caste Category, Income, Name) 100% locally — no cloud APIs.
+3. **Cross-Field Mismatch Detection** — Fuzzy string similarity on names, income threshold validation, caste verification. Discrepancies logged in `mismatchSchema`.
+4. **Verifier Queue** (`/verifier/queue`) — Side-by-side preview, OCR confidence scores, Approve / Reject / Deficiency.
+5. **Scrutiny Officer** (`/officer/scrutiny`) — Reviews verified dossier + ML score, records signed justification in the Tamper-Evident Audit Log.
+6. **Merit Publishing & DBT** — Admin applies 30% Women + 5% PwD quotas, publishes final merit list for Direct Benefit Transfer.
 
 ---
 
 ## 🛠️ Tools & Technologies Used
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                             FULL TECHNOLOGY STACK                                │
-├─────────────────────────┬────────────────────────────┬───────────────────────────┤
-│  FRONTEND               │  BACKEND & API             │  DATA & PERSISTENCE       │
-│  • React 18 (Vite SPA)  │  • Node.js (v18+)          │  • MongoDB Atlas / Local  │
-│  • React-Bootstrap 5    │  • Express.js REST API     │  • Mongoose ODM           │
-│  • Vanilla CSS Tokens   │  • JWT Authentication      │  • Multi-index Schemas    │
-│  • Lucide React Icons   │  • Bcrypt.js Password Hash │  • Structured Sub-docs    │
-│  • Chart.js Visuals     │  • Nodemailer (Real OTP)   │  • JSON Seed Data         │
-├─────────────────────────┼────────────────────────────┼───────────────────────────┤
-│  AI, OCR & ML           │  SECURITY & COMPLIANCE     │  DEVOPS & DEPLOYMENT      │
-│  • Python 3.13          │  • SHA-256 Binary Hash     │  • Vercel (Frontend SPA)  │
-│  • Scikit-Learn 1.9     │  • 4-Tier RBAC Guards      │  • Render (Node.js API)   │
-│  • Pandas & NumPy       │  • Immutable Audit Trails  │  • Git & Protected Envs   │
-│  • Joblib Serialization │  • Private .env Isolation  │  • Vite Fast Production   │
-│  • Tesseract.js (OCR)   │  • Human-in-the-Loop AI    │  • Nodemon Dev Reload     │
-└─────────────────────────┴────────────────────────────┴───────────────────────────┘
+┌──────────────────────────┬────────────────────────────┬──────────────────────────┐
+│  FRONTEND                │  BACKEND & API             │  DATA & PERSISTENCE      │
+│  • React 18 (Vite SPA)   │  • Node.js v18+            │  • MongoDB Atlas / Local │
+│  • React-Bootstrap 5     │  • Express.js REST API     │  • Mongoose ODM          │
+│  • Vanilla CSS Tokens    │  • JWT Authentication      │  • 10 Mongoose Models    │
+│  • Lucide React Icons    │  • Bcrypt.js Password Hash │  • Structured Sub-docs   │
+│  • Chart.js / react-     │  • Nodemailer (OTP Email)  │  • JSON Seed Data        │
+│    chartjs-2             │  • Multer (File Uploads)   │                          │
+│  • canvas-confetti       │  • Morgan (Request Logger) │                          │
+│  • React Router v7       │  • node:crypto (OTP Gen)   │                          │
+├──────────────────────────┼────────────────────────────┼──────────────────────────┤
+│  AI, OCR & ML            │  SECURITY & COMPLIANCE     │  DEVOPS & INFRA          │
+│  • Python 3.10+          │  • SHA-256 Binary Hashing  │  • Docker + Compose      │
+│  • Scikit-Learn          │  • 4-Tier RBAC Guards      │  • Nginx Reverse Proxy   │
+│  • Pandas & NumPy        │  • Immutable Audit Trails  │  • Terraform (AWS IaC)   │
+│  • Joblib Serialization  │  • Rate Limiting           │  • GitHub Actions CI/CD  │
+│  • Tesseract.js (OCR)    │  • Private .env Isolation  │  • Let's Encrypt SSL     │
+│  • pdf-parse             │  • Human-in-the-Loop AI    │  • node --watch (dev)    │
+│  • mongodb-memory-server │  • Email OTP Verification  │  • Vite Build            │
+│    (testing)             │                            │                          │
+└──────────────────────────┴────────────────────────────┴──────────────────────────┘
+```
+
+---
+
+## 📁 Project Structure
+
+```
+tribal-scholar/
+│
+├── client/                          # React 18 + Vite Frontend (SPA)
+│   ├── public/
+│   │   └── images/hero/             # Hero section images
+│   └── src/
+│       ├── api/
+│       │   └── axiosClient.js       # Axios instance with JWT interceptor
+│       ├── components/
+│       │   ├── common/              # Button, FormField, SelectField,
+│       │   │                        # PageHeader, EmptyState, ErrorState,
+│       │   │                        # LoadingSkeleton, ConfirmationDialog
+│       │   ├── kisan/               # HeroCommandCenter (admin hero)
+│       │   ├── AppShell.jsx         # Page layout wrapper
+│       │   ├── ChatWidget.jsx       # Gemini AI chat assistant
+│       │   ├── DataTable.jsx        # Reusable sortable table
+│       │   ├── DocumentUploader.jsx # Multi-file upload with OCR trigger
+│       │   ├── EligibilityResultCard.jsx
+│       │   ├── EligibilitySummary.jsx
+│       │   ├── GovernmentBar.jsx    # MoTA top government bar
+│       │   ├── MainNavbar.jsx       # Primary navigation bar
+│       │   ├── NotificationBell.jsx # Real-time notification bell
+│       │   ├── OcrResultCard.jsx    # OCR extraction display
+│       │   ├── SchemeCard.jsx       # Scheme listing card
+│       │   ├── Sidebar.jsx          # Role-specific dashboard sidebar
+│       │   ├── StatusBadge.jsx      # Application status indicator
+│       │   └── Timeline.jsx         # Application lifecycle timeline
+│       ├── context/
+│       │   ├── AuthContext.jsx      # JWT auth state + login/register/OTP
+│       │   └── LanguageContext.jsx  # Hindi/English i18n context
+│       ├── pages/
+│       │   ├── public/              # Home, Login, Register, VerifyOtp,
+│       │   │                        # EligibilityChecker, SchemeList,
+│       │   │                        # SchemeDetail, MachineLearningHub
+│       │   ├── applicant/           # ApplicantDashboard, NewApplication,
+│       │   │                        # MyApplications, ApplicationDetail,
+│       │   │                        # DeficiencyInbox, MyFellowship,
+│       │   │                        # Notifications, Profile, RecommendedSchemes
+│       │   ├── admin/               # AdminDashboard, UserManagement,
+│       │   │                        # RuleBuilder, SchemeBuilder,
+│       │   │                        # AuditLog, Anomalies, Reports
+│       │   ├── verifier/            # VerifierQueue, ReviewApplication,
+│       │   │                        # FlaggedDocuments
+│       │   └── officer/             # OfficerScrutiny, MeritList,
+│       │                            # FellowshipPayments, SelectionWorkflow
+│       ├── index.css                # Civic design system (CSS tokens)
+│       └── App.jsx                  # Route definitions (React Router v7)
+│
+├── server/                          # Node.js + Express Backend
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── db.js                # MongoDB connection (Atlas / local fallback)
+│   │   │   └── env.js               # dotenv loader
+│   │   ├── controllers/             # authController, applicationController,
+│   │   │                            # schemeController, documentController,
+│   │   │                            # eligibilityController, verifierController,
+│   │   │                            # officerController, adminController,
+│   │   │                            # disbursementController, dashboardController
+│   │   ├── middleware/
+│   │   │   ├── auth.js              # JWT verify + RBAC protect
+│   │   │   ├── errorHandler.js      # Global error handler
+│   │   │   ├── rateLimit.js         # Rate limiting middleware
+│   │   │   └── upload.js            # Multer config (PDF/Image)
+│   │   ├── models/
+│   │   │   ├── Application.js       # Application lifecycle + status
+│   │   │   ├── AuditLog.js          # Tamper-evident immutable log
+│   │   │   ├── Counter.js           # Auto-increment ID counter
+│   │   │   ├── Deficiency.js        # Verifier-raised deficiency notices
+│   │   │   ├── Disbursement.js      # DBT payment records
+│   │   │   ├── Document.js          # Uploaded doc + OCR + hash
+│   │   │   ├── Notification.js      # In-app notification records
+│   │   │   ├── Scheme.js            # Scholarship scheme definitions
+│   │   │   ├── User.js              # User + hashed password + OTP
+│   │   │   └── VerificationLog.js   # Per-doc verifier decisions
+│   │   ├── routes/                  # authRoutes, applicationRoutes,
+│   │   │                            # documentRoutes, schemeRoutes, etc.
+│   │   ├── seed/
+│   │   │   ├── seed.js              # Full database seeder (users + schemes)
+│   │   │   ├── schemes.js           # All 5 official MoTA scheme definitions
+│   │   │   └── ensureSchemes.js     # Upsert schemes on server start
+│   │   ├── services/
+│   │   │   ├── emailService.js      # Nodemailer OTP email delivery
+│   │   │   ├── meritService.js      # Merit score + quota calculation
+│   │   │   ├── mlService.js         # Python subprocess ML inference bridge
+│   │   │   ├── notificationService.js
+│   │   │   ├── ocrService.js        # Tesseract.js + pdf-parse extraction
+│   │   │   ├── recommendService.js  # Scheme recommendation logic
+│   │   │   ├── reminderService.js   # Hourly background reminder jobs
+│   │   │   └── rulesEngine.js       # Dynamic eligibility rules evaluator
+│   │   ├── app.js                   # Express app setup (CORS, middlewares)
+│   │   └── server.js                # Entry point — DB connect + listen
+│   ├── scripts/
+│   │   ├── dev-local.js             # Local MongoDB dev runner
+│   │   └── seed-schemes.js          # Standalone scheme seeder script
+│   ├── test/
+│   │   └── api.test.js              # Node built-in test runner API tests
+│   └── .env                         # Environment variables (not committed)
+│
+├── ml/                              # Python ML training & inference
+│   ├── models/
+│   │   ├── eligibility_classifier.joblib
+│   │   ├── merit_regressor.joblib
+│   │   ├── fraud_classifier.joblib
+│   │   ├── isolation_forest.joblib
+│   │   ├── scheme_recommender.joblib
+│   │   ├── scholarship_encoders.joblib
+│   │   ├── scholarship_scaler.joblib
+│   │   └── feature_importance.json
+│   ├── data/                        # Training datasets
+│   └── scripts/                     # Model training scripts
+│
+├── nginx/                           # Nginx reverse proxy config
+├── terraform/                       # AWS infrastructure as code (IaC)
+├── .github/                         # GitHub Actions CI/CD workflows
+├── docker-compose.prod.yml          # Production Docker Compose stack
+└── .gitignore
 ```
 
 ---
 
 ## 📜 The 5 Official MoTA Schemes
 
-All five official scholarship & fellowship programmes administered by the Ministry of Tribal Affairs are fully implemented:
+All five official scholarship & fellowship programmes administered by the Ministry of Tribal Affairs:
 
-| Scheme Code | Scheme Name | Level & Scope | Financial Benefits | Annual Seats / Target |
-| :---: | :--- | :--- | :--- | :---: |
-| **`ARG45`** | **National Fellowship for ST Students (NFST)** | M.Phil & Ph.D. in Indian Universities, IITs, NITs, IISc | JRF/SRF fellowship as per UGC norms + ₹20,800/yr contingency + HRA | **750 Slots** *(30% Women Quota)* |
-| **`AZKMI`** | **National Overseas Scholarship (NOS)** | Master's & Ph.D. in Top 500 QS World Universities | 100% Tuition + $15,400 USD / £9,900 GBP living allowance + Airfare | **20 Slots (17 ST + 3 PVTG)** *(Income ≤ ₹6.0L)* |
-| **`A023B`** | **Top Class Education for ST Students** | UG/PG Degrees in 265+ Premier Institutes (IIT, IIM, AIIMS, NLU) | Full institute fees + ₹3,000/mo boarding + ₹45,000 one-time computer grant | **Institutes Notified** *(Income ≤ ₹6.0L)* |
-| **`BVOBC`** | **Post-Matric Scholarship for ST Students** | Class 11, 12, Degree, Diploma, Medical, Engineering | Direct Benefit Transfer (DBT) tuition fees + monthly maintenance allowance | **Centrally Sponsored** *(Pan-India)* |
-| **`BPVGK`** | **Pre-Matric Scholarship for ST Students** | Class 9th & 10th Secondary ST Students | ₹3,500–₹7,000/yr DBT stipend to eliminate secondary dropouts | **Centrally Sponsored** *(Pan-India)* |
+| Code | Scheme Name | Level & Scope | Financial Benefits | Seats |
+|:---:|:---|:---|:---|:---:|
+| **`ARG45`** | National Fellowship for ST Students (NFST) | M.Phil & Ph.D. in IITs, NITs, IISc | JRF/SRF fellowship (UGC norms) + ₹20,800/yr contingency + HRA | **750** *(30% Women)* |
+| **`AZKMI`** | National Overseas Scholarship (NOS) | Master's & Ph.D. — Top 500 QS World Universities | 100% Tuition + $15,400 USD / £9,900 GBP living allowance + Airfare | **20** *(Income ≤ ₹6L)* |
+| **`A023B`** | Top Class Education for ST Students | UG/PG — 265+ Premier Institutes (IIT, IIM, AIIMS, NLU) | Full fees + ₹3,000/mo boarding + ₹45,000 computer grant | Notified institutes |
+| **`BVOBC`** | Post-Matric Scholarship for ST Students | Class 11, 12, Degree, Diploma, Medical, Engineering | DBT tuition fees + monthly maintenance allowance | Pan-India |
+| **`BPVGK`** | Pre-Matric Scholarship for ST Students | Class 9th & 10th Secondary Students | ₹3,500–₹7,000/yr DBT stipend | Pan-India |
 
 ---
 
 ## 👥 The Four Operational Roles
 
 ```
- 🎓 APPLICANT (ST Scholar)    🔍 DOCUMENT VERIFIER       ⚖️ SCRUTINY OFFICER        👑 MINISTRY ADMIN
- ─────────────────────────    ────────────────────       ───────────────────        ─────────────────
- • Pre-check eligibility      • Queue review             • Scrutiny dashboard       • Executive KPIs
- • Submit applications        • OCR confidence inspec.   • Formal determination     • Dynamic Rule Builder
- • Upload documents           • Raise deficiencies       • Written justification    • Publish Merit Lists
- • Resolve deficiency inbox   • Approve/Reject docs      • Merit recommendation     • Anomaly Dashboard
- • Track fellowship & DBT     • Mismatch detection       • Flag fraud cases         • ML Intelligence Hub
+🎓 APPLICANT (ST Scholar)     🔍 DOCUMENT VERIFIER        ⚖️ SCRUTINY OFFICER         👑 MINISTRY ADMIN
+──────────────────────────    ──────────────────────       ───────────────────         ─────────────────
+• Pre-check eligibility       • Verifier queue review      • Scrutiny dashboard        • Executive KPIs
+• Submit applications         • OCR confidence inspect     • Formal determination      • Dynamic Rule Builder
+• Upload documents            • Raise deficiency notices   • Written justification     • Scheme Builder
+• Resolve deficiency inbox    • Approve / Reject docs      • Merit recommendation      • Publish Merit Lists
+• Track fellowship & DBT      • Flag mismatches            • Flag fraud cases          • Anomaly Dashboard
+• View recommended schemes    • Flagged documents queue    • Fellowship payments       • User Management
+• Notification bell           •                            • Selection workflow        • ML Intelligence Hub
+                                                                                       • Audit Log viewer
+                                                                                       • Reports
 ```
-
----
-
-## 🔑 Pre-Configured Demo Credentials
-
-Click any role below or log in directly on the portal:
-
-| Role | Email Address | Password | Key Showcase Feature |
-| :--- | :--- | :--- | :--- |
-| 👑 **Ministry Admin** | `admin@mota.gov.in` | `Admin@123` | Dynamic Rule Builder simulation, Merit publisher, ML Hub |
-| 🔍 **Document Verifier** | `verifier1@mota.gov.in` | `Verifier@123` | OCR document inspection queue, Deficiency raising |
-| ⚖️ **Scrutiny Officer** | `officer1@mota.gov.in` | `Officer@123` | Eligibility scrutiny, Formal approvals with justifications |
-| 🎓 **ST Scholar (Applicant)** | `rahul.st@example.com` | `Applicant@123` | Fellowship dashboard, Deficiency inbox, DBT tracking |
-| 🎓 **ST Scholar (Overseas)** | `sunita.soren@example.com` | `Applicant@123` | National Overseas Scholarship application tracking |
 
 ---
 
 ## ⚡ Local Quick Start
 
-### 1. Prerequisites
-- **Node.js**: v18.0.0 or higher
-- **MongoDB**: Local MongoDB on port 27017 or MongoDB Atlas URI
-- **Python**: 3.10+ (for running ML scripts)
+### Prerequisites
+
+| Tool | Version |
+|:---|:---|
+| Node.js | v18.0.0 or higher |
+| MongoDB | Local (port 27017) **or** MongoDB Atlas URI |
+| Python | 3.10+ (for ML inference scripts) |
+| npm | v9+ |
 
 ---
 
-### 2. Setup & Execution
+### Step 1 — Clone & Configure
 
-#### Step A: Backend
 ```bash
-# Navigate to server directory
+git clone https://github.com/Dhruta25/Tribal-scholarship.git
+cd Tribal-scholarship
+```
+
+**Configure server environment:**
+```bash
+cp server/.env.example server/.env
+# Edit server/.env and fill in your values:
+```
+
+```env
+PORT=5001
+MONGODB_URI=mongodb://127.0.0.1:27017/sih_scholarship   # or Atlas URI
+JWT_SECRET=your_strong_jwt_secret_here
+JWT_EXPIRE=7d
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+
+# Email / OTP — set OTP_DELIVERY=development to show OTP on screen (no email needed)
+OTP_DELIVERY=development
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-16-char-gmail-app-password
+```
+
+**Configure client environment:**
+```bash
+cp client/.env.example client/.env
+# client/.env:
+# VITE_API_URL=http://localhost:5001/api
+```
+
+---
+
+### Step 2 — Backend
+
+```bash
 cd server
 
 # Install dependencies
 npm install
 
-# Seed the database with all 5 schemes and demo accounts
+# Seed database (5 schemes + demo user accounts)
 npm run seed
 
-# Start development server
+# Start development server (auto-restarts on file changes)
 npm run dev
-# -> Backend running on http://localhost:5001
+# → API running at http://localhost:5001/api
 ```
 
-#### Step B: Frontend
+---
+
+### Step 3 — Frontend
+
 ```bash
-# Open a new terminal and navigate to client
+# Open a new terminal
 cd client
 
 # Install dependencies
 npm install
 
-# Start Vite development server
+# Start Vite dev server
 npm run dev
-# -> Frontend running on http://localhost:5173
+# → App running at http://localhost:5173
 ```
 
-Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+Open **http://localhost:5173** in your browser.
 
 ---
 
-## 🚀 Cloud Deployment Guide
+### Step 4 — ML Models (Optional)
 
-### **A. Backend Deployment (Render / Railway)**
-1. Connect your GitHub repository to [Render.com](https://render.com) (Web Service).
-2. Configure settings:
-   - **Root Directory:** `server`
-   - **Build Command:** `npm install`
-   - **Start Command:** `node src/server.js`
-3. Environment Variables:
-   ```env
-   PORT=5001
-   NODE_ENV=production
-   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/sih_scholarship
-   JWT_SECRET=your_super_strong_jwt_secret_key_2026
-   JWT_EXPIRE=7d
-   CLIENT_URL=https://your-frontend.vercel.app
-   EMAIL_USER=your.email@gmail.com
-   EMAIL_PASS=your-16-char-app-password
-   ```
+The ML models (`.joblib`) are pre-trained and committed. To retrain:
+
+```bash
+cd ml
+pip install scikit-learn pandas numpy joblib
+python scripts/train_models.py
+```
 
 ---
 
-### **B. Frontend Deployment (Vercel / Netlify)**
-1. Import repository to [Vercel.com](https://vercel.com).
-2. Configure settings:
-   - **Framework Preset:** `Vite`
-   - **Root Directory:** `client`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-3. Environment Variable:
-   ```env
-   VITE_API_URL=https://your-backend-api.onrender.com/api
-   ```
+## 🔑 Demo Credentials (After Seeding)
+
+Run `npm run seed` inside `server/` first. The following accounts are created:
+
+| Role | Email | Password |
+|:---|:---|:---|
+| 👑 Ministry Admin | `admin@mota.gov.in` | `Admin@123` |
+| 🔍 Document Verifier | `verifier1@mota.gov.in` | `Verifier@123` |
+| ⚖️ Scrutiny Officer | `officer1@mota.gov.in` | `Officer@123` |
+| 🎓 ST Scholar (Applicant) | `rahul.st@example.com` | `Applicant@123` |
 
 ---
 
-## 🛡️ Security & Responsible AI Standards
+## 🛡️ Security & Responsible AI
 
-- **Human-in-the-Loop AI:** The AI models and OCR extract, calculate, and flag anomalies, but all final scholarship grants and rejections require human verification.
-- **Immutable Audit Logging:** Every status modification, override, and document verification is permanently logged with timestamp, user ID, IP address, and stated reason.
-- **No External Cloud Leaks:** OCR and ML run 100% locally on the host machine. Student certificates and personal data are never transmitted to third-party commercial AI APIs.
-- **Strict Environment Isolation:** All secrets, database connection strings, and tokens are stored in unversioned `.env` files protected by `.gitignore`.
+- **Human-in-the-Loop AI** — AI models extract, flag, and score — but all final scholarship grants and rejections require a human officer's signed determination.
+- **Immutable Audit Logging** — Every status change, override, and document decision is permanently logged with timestamp, actor ID, IP address, and stated reason.
+- **No External Cloud Leaks** — OCR and ML run 100% locally. Student certificates and personal data are never sent to third-party commercial AI APIs.
+- **Strict Environment Isolation** — All secrets and database URIs are stored in unversioned `.env` files excluded by `.gitignore`.
+- **Rate Limiting** — API endpoints are rate-limited to prevent brute-force and denial-of-service attacks.
+- **Email OTP Verification** — New accounts require email-verified OTP before login is permitted.
 
 ---
 
 <div align="center">
 
-**Smart India Hackathon 2026 — Problem Statement 26239**  
+**Smart India Hackathon 2026 — Problem Statement ID: 26239**
 *Ministry of Tribal Affairs (MoTA), Government of India*
 
 </div>
