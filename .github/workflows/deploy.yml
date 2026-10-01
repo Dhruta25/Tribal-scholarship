@@ -86,7 +86,7 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["/usr/local/bin/tribal-auto-deploy.sh", "curl -f http://localhost/healthz || exit 1"]' \
+            --parameters 'commands=["/usr/local/bin/tribal-auto-deploy.sh", "curl -f -k https://localhost/api/health || exit 1"]' \
             --query "Command.CommandId" \
             --output text)
 
